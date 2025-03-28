@@ -1,0 +1,8 @@
+argparse
+selenium
+webdriver-manager
+undetected-chromedriver
+beautifulsoup4
+distutils
+setuptools
+pygetwindow; platform_system == "Windows"
