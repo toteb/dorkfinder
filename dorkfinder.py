@@ -13,7 +13,6 @@ import undetected_chromedriver as uc
 uc.Chrome.__del__ = lambda self: None
 import json
 
-
 # === CLI ARGUMENTS ===
 class SilentArgumentParser(argparse.ArgumentParser):
     def print_banner(self):
@@ -79,29 +78,28 @@ def log(msg, **kwargs):
 # Minimize on windows
 def minimize_chrome_window(timeout=10):
     if platform.system() != 'Windows':
-        return  # Skip on non-Windows platforms
+        return
 
     try:
-        import pygetwindow as gw
-
         print("[INFO] Waiting for Chrome window to appear...")
-
-        # Wait loop to avoid hanging
-        for _ in range(timeout * 2):  # 0.5s steps, up to 10s
-            windows = gw.getWindowsWithTitle("Google Chrome")
-            chrome_windows = [w for w in windows if w.isVisible]
-            if chrome_windows:
-                for win in chrome_windows:
-                    win.minimize()
-                print("[INFO] Chrome window minimized.")
-                return
+        from pywinauto import Desktop
+        for _ in range(timeout * 2):
+            try:
+                
+                windows = Desktop(backend="uia").windows()
+                for win in windows:
+                    if "chrome" in win.window_text().lower():
+                        win.minimize()
+                        print("[INFO] Chrome window minimized.")
+                        return
+            except Exception:
+                pass
             time.sleep(0.5)
 
         print("[!] Chrome window not found within timeout. Skipping minimize.")
 
     except Exception as e:
         print(f"[!] Failed to minimize Chrome window: {e}")
-
 
 # Grab google chrome foe windows
 def find_chrome_binary():
