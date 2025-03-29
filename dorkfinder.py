@@ -120,13 +120,14 @@ else:
     options.add_argument("--start-minimized")
 
 if args.tor:
-    if not is_tor_installed():
-        log("[!] Tor is not installed. Please install it before using --tor", silent=args.silent)
+    if not start_tor():
+        log("[!] Could not start Tor. Exiting.", silent=args.silent)
         sys.exit(1)
-    start_tor()
     options.add_argument('--proxy-server=socks5://127.0.0.1:9050')
     tor_ip = get_current_tor_ip()
     log(f"[INFO] Tor is active. Current Tor IP: {tor_ip}")
+    if "Error" in tor_ip:
+        log(f"[!] {tor_ip}", silent=args.silent)
 
 browser = uc.Chrome(options=options, version_main=134, headless=False)
 if platform.system() == 'Windows':
@@ -229,6 +230,7 @@ try:
                         time.sleep(0.25)
                 log('\r   -> Done sleeping.', silent=args.silent)
 
+    ensure_sudo_alive()
     browser.quit()
     stop_tor()
     if output_file:
@@ -242,6 +244,7 @@ except KeyboardInterrupt:
         if browser:
             browser.quit()
     except: pass
+    ensure_sudo_alive()  # Refresh sudo before stopping Tor
     stop_tor()
     if output_file:
         output_file.close()
