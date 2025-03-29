@@ -46,16 +46,16 @@ class SilentArgumentParser(argparse.ArgumentParser):
 
 parser = SilentArgumentParser(
     description='Simple dorkfinder by @mcn1k',
-    usage='dorkfinder.py -t example.com [-o] [-e {brave,bing,ddg,google}] [-me] [--debug] [-sl 60] [--si]'
+    usage='dorkfinder.py -t example.com [-o] [-e {brave,bing,ddg,google}] [--debug] [-sl 60] [--si]'
 )
 parser.add_argument('-t', metavar='example.com', help='Target domain (or comma-separated list)', dest='target', type=str)
 parser.add_argument('-o', action='store_true', help='Write output to a timestamped file', dest='output')
 parser.add_argument('-e', choices=['brave', 'bing', 'ddg', 'google'], default='google', help='Search engine to use. Default: Google Chrome', dest='engine')
-parser.add_argument('-me', action='store_true', help='Use all search engines(not recommended)', dest='multi_engine')
 parser.add_argument('-d', action='store_true', help='Enable debug output (page source snippet)', dest='debug')
 parser.add_argument('-sl', type=int, default=60, help='Sleep time between requests (in seconds)', dest='sleep')
 parser.add_argument('-si', action='store_true', default=False, help='Keeps everything nice and quiet', dest='silent')
 parser.add_argument('--tor', action='store_true', help='Enable Tor routing')
+parser.add_argument('--notor', action='store_true', help='Disables Tor routing for --resume')
 parser.add_argument('--resume', action='store_true', help='Resume from last progress')
 
 # FIRE HERE
@@ -73,17 +73,22 @@ if args.resume:
         with open(PROGRESS_FILE, 'r') as f:
             progress = json.load(f)
         if not args.target:
-            if progress:
-                args.target = list(progress.keys())[0]
-                if not args.multi_engine:
-                    first_target = args.target
-                    completed_engines = list(progress.get(first_target, {}).values())
-                    if completed_engines:
-                        args.engine = completed_engines[0]
-                print(f"[INFO] Resuming previous target from progress: {args.target}")
+            args.target = list(progress.keys())[0]
+            completed_engines = list(progress.get(args.target, {}).values())
+            if completed_engines:
+                args.engine = completed_engines[0]
+            print(f"[INFO] Resuming previous target from progress: {args.target}")
+            # If previous run used Tor but --tor not provided, restore it, but check if --notor is provided first.
+            if args.notor:
+                args.tor = False
+                log("[INFO] Skipping Tor for resume...", silent=args.silent)
             else:
-                print("[!] Progress file found but empty. Please provide a target with -t.")
-                sys.exit(1)
+                if progress.get('use_tor') and not args.tor:
+                    log("[INFO] Previous session used Tor. Enabling Tor for resume...", silent=args.silent)
+                    args.tor = True
+        else:
+            print("[!] Progress file found but empty. Please provide a target with -t.")
+            sys.exit(1)
     else:
         print("[!] --resume flag used, but no progress file found.")
         print("[!] Either remove --resume or run with -t to start fresh.")
@@ -96,7 +101,8 @@ def save_progress():
 
 # SEARCH ENGINES
 SEARCH_ENGINES = get_search_engines()
-ENABLED_ENGINES = list(SEARCH_ENGINES.keys()) if args.multi_engine else [args.engine]
+# Use selected engine
+ENABLED_ENGINES = [args.engine]
 targets = [t.strip() for t in args.target.split(',')] if args.target else [] 
 
 # === Load Queries ===
@@ -107,6 +113,11 @@ with open(queries_path, 'r', encoding='utf-8') as f:
 
 # === Browser Setup ===
 options = uc.ChromeOptions()
+use_real_profile = True
+
+# On Linux, avoid using real profile when running headless with non-Google engines
+headless_mode = args.engine != 'google'
+
 if platform.system() == 'Darwin':
     profile = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default")
     options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
@@ -117,7 +128,8 @@ else:
     profile = os.path.join(os.environ['LOCALAPPDATA'], "Google\\Chrome\\User Data")
     options.binary_location = find_chrome_binary()
 
-options.add_argument(f"--user-data-dir={profile}")
+if use_real_profile:
+    options.add_argument(f"--user-data-dir={profile}")
 if platform.system() == 'Windows':
     options.add_argument("--no-first-run")
     options.add_argument("--no-default-browser-check")
@@ -134,8 +146,13 @@ if args.tor:
     if "Error" in tor_ip:
         log(f"[!] {tor_ip}", silent=args.silent)
 
-headless_mode = not args.multi_engine and args.engine != 'google'
-browser = uc.Chrome(options=options, version_main=134, headless=headless_mode)
+try:
+    browser = uc.Chrome(options=options, version_main=134, headless=headless_mode)
+except Exception as e:
+    log(f"[!] Failed to start browser: {e}", silent=args.silent)
+    stop_tor()
+    sys.exit(1)
+
 if not headless_mode:
     if platform.system() == 'Windows':
         minimize_chrome_window()
