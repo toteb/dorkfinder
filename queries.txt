@@ -1,237 +1,258 @@
 #Cloud Storage
-site:s3.amazonaws.com "{cli}"
-site:blob.core.windows.net "{cli}"
-site:googleapis.com "{cli}"
-site:drive.google.com "{cli}"
-site:dev.azure.com "{cli}"
-site:onedrive.live.com "{cli}"
-site:digitaloceanspaces.com "{cli}"
-site:sharepoint.com "{cli}"
-site:s3-external-1.amazonaws.com "{cli}"
-site:s3.dualstack.us-east-1.amazonaws.com "{cli}"
-site:dropbox.com/s "{cli}"
-inurl:www.dropbox.com/s/ "{cli}"
-site:box.com/s "{cli}"
-site:docs.google.com inurl:"/d/" "{cli}"
+site:s3.amazonaws.com "{cli}" 
+site:blob.core.windows.net "{cli}" 
+site:googleapis.com "{cli}" 
+site:drive.google.com "{cli}" 
+site:dev.azure.com "{cli}" 
+site:onedrive.live.com "{cli}" 
+site:digitaloceanspaces.com "{cli}" 
+site:sharepoint.com "{cli}" 
+site:s3-external-1.amazonaws.com "{cli}" 
+site:s3.dualstack.us-east-1.amazonaws.com "{cli}" 
+site:dropbox.com/s "{cli}" 
+inurl:www.dropbox.com/s/ "{cli}" 
+site:box.com/s "{cli}" 
+site:docs.google.com inurl:"/d/" "{cli}" 
+
 #Sensitive Parameters
-site:"{cli}" (inurl:email= OR inurl:phone= OR inurl:password= OR inurl:secret=)
-site:prezi.com "{cli}"
-site:bitbucket.org inurl:"{cli}"
-site:zoom.us inurl:"{cli}"
-site:s3.amazonaws.com intext:"{cli}"
-site:jfrog.io "{cli}"
-site:firebaseio.com "{cli}"
-inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer site:"{cli}"
-intext:"error" | intext:"exception" | intext:"not found" | intext:"failed" site:"{cli}"
-site:"{cli}" inurl:login | inurl:logon | inurl:sign-in | inurl:signin | inurl:portal
-site:"{cli}" "choose file"
-#Code Leaks
-inurl:gitlab "{cli}"
-site:http://box.com "{cli}"
-site:atlassian.net "{cli}"
-site:atlassian.net inurl:/servicedesk/customer/user/login "{cli}"
-site:bitbucket.org "{cli}"
-site:codebeautify.org "{cli}"
-site:codepad.co "{cli}"
-site:codepen.io "{cli}"
-site:codeshare.io "{cli}"
-site:coggle.it "{cli}"
-site:gitter.im "{cli}"
-site:google.com "{cli}"
-site:jsdelivr.net "{cli}"
-site:jsfiddle.net "{cli}"
-site:libraries.io "{cli}"
-site:npm.runkit.com "{cli}"
-site:npmjs.com "{cli}"
-site:papaly.com "{cli}"
-site:pastebin.com "{cli}"
-site:productforums.google.com "{cli}"
-site:repl.it "{cli}"
-site:scribd.com "{cli}"
-site:sharecode.io "{cli}"
-site:trello.com "{cli}"
-site:ycombinator.com "{cli}"
-inurl:https://trello.com AND intext:"{cli}"
+site:"{cli}" (inurl:email= OR inurl:phone= OR inurl:password= OR inurl:secret= OR inurl:token= OR inurl:apikey= OR inurl:access_token=)
+site:prezi.com "{cli}" 
+site:bitbucket.org inurl:"{cli}" 
+site:zoom.us inurl:"{cli}" 
+site:jfrog.io "{cli}" 
+site:firebaseio.com "{cli}" 
+inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer site:"{cli}" 
+intext:"error" | intext:"exception" | intext:"not found" | intext:"failed" site:"{cli}" 
+site:"{cli}" inurl:login | inurl:logon | inurl:sign-in | inurl:signin | inurl:portal 
+site:"{cli}" "choose file" 
+
+#Code Leaks and Development Files
+inurl:gitlab "{cli}" 
+site:http://box.com "{cli}" 
+site:atlassian.net "{cli}" 
+site:atlassian.net inurl:/servicedesk/customer/user/login "{cli}" 
+site:bitbucket.org "{cli}" 
+site:codebeautify.org "{cli}" 
+site:codepad.co "{cli}" 
+site:codepen.io "{cli}" 
+site:codeshare.io "{cli}" 
+site:coggle.it "{cli}" 
+site:gitter.im "{cli}" 
+site:google.com "{cli}" 
+site:jsdelivr.net "{cli}" 
+site:jsfiddle.net "{cli}" 
+site:libraries.io "{cli}" 
+site:npm.runkit.com "{cli}" 
+site:npmjs.com "{cli}" 
+site:papaly.com "{cli}" 
+site:pastebin.com "{cli}" 
+site:productforums.google.com "{cli}" 
+site:repl.it "{cli}" 
+site:scribd.com "{cli}" 
+site:sharecode.io "{cli}" 
+site:trello.com "{cli}" 
+site:ycombinator.com "{cli}" 
+inurl:https://trello.com AND intext:"{cli}" 
+
 #Juicy Extensions
-site:"{cli}" ext:log | ext:txt | ext:conf | ext:cnf | ext:ini | ext:env | ext:sh | ext:bak | ext:backup | ext:swp | ext:old | ext:~ | ext:git | ext:svn | ext:htpasswd | ext:htaccess | ext:sql | ext:csv | ext:.git-credentials | ext:yaml | ext:yml | ext:ppk | ext:pem | ext:json | ext:cfg | ext:xml | ext:ps1
-site:"{cli}" filename:connections.xml | filename:config.php | filename:config.json
-site:"{cli}" ext:jsp | ext:asp | ext:php | ext:aspx | ext:pl | ext:cfm | ext:py | ext:rb
-site:"{cli}" ext:pdf "username|user|pass|password|email|id|sensitive|internal"
-site:"{cli}" ext:pdf "confidential"
-site:"{cli}" ext:pdf "for internal use only"
-site:"{cli}" ext:pdf "private"
-site:"{cli}" ext:pdf "sensitive"
-site:"{cli}" filename:.env
-site:"{cli}" extension:csv admin
-site:"{cli}" jdbc
-site:"{cli}" Index of /.svn
-site:"{cli}" intitle:"index of" "users.yml" | "admin.yml" | "config.yml"
-site:"{cli}" intext:"Index of" intext:"backup.tar"
-site:"{cli}" inurl:"wp-content" intitle:"index.of" intext:backup"
-site:"{cli}" intext:"Index of" intext:"backup.tar"
-site:"{cli}" intitle:"index of" "config.php"
-site:"{cli}" inurl:"/private" intext:"index of /" "config"
-site:"{cli}" intitle:"index of " "config/db"
-site:"{cli}" intitle:"index of /" "docker-compose.yml" "*.env"
-site:"{cli}" intext:"index of /" "*.ovpn"
-site:"{cli}" intitle:"index of /" "public.zip"
-site:"{cli}" intitle:"index of /" "admin.zip" "admin/"
-site:"{cli}" intitle:"index of "conf.json"
-site:"{cli}" intitle:"index of "application.yml"
-site:"{cli}" inurl:ssh intitle:index of /files
-site:"{cli}" intitle:"index of" "database.sql"
-site:"{cli}" intext:"index of" smb.con,
-site:"{cli}" index of:admin.asp
-site:"{cli}" intext:"index of" "config"
-site:"{cli}" intitle:"index of /" intext:".db
-site:"{cli}" intitle:index of "wc.db"
-site:"{cli}" intitle: index of /secrets/
-site:"{cli}" intext:"index of" ".git"
-site:"{cli}" intitle:"index of /database/migrations"
-site:"{cli}" intext:"index of" ".sql"
-site:"{cli}" intext:"index of" "phpMyAdmin"
-site:"{cli}" intitle:Index of "/venv"
-site:"{cli}" inurl:"admin/default.aspx"
-site:"{cli}" inurl: /wp-includes/uploads
-site:"{cli}" intitle:"index of" "release.sh"
-site:"{cli}" intitle:"index of" "setup.sh"
-site:"{cli}" intitle:"index of" "configure.sh"
-site:"{cli}" intitle:"index of" "deploy.sh"
-site:"{cli}" intitle:"index of /" intext:".env"
-site:"{cli}" intext:"Index of" intext:"bitbucket-pipelines.yml"
-site:"{cli}" inurl:/admin ext:config
-site:"{cli}" intitle:"index of" "db.py"
-site:"{cli}" intitle:"index of "cloud-config.yml"
-site:"{cli}" index of /wp-admin.zip
-site:"{cli}" intitle:"index of" aws/
-site:"{cli}" intitle:"index of" "catalina.out"
-site:"{cli}" "index of" error_logs
-site:"{cli}" intitle:"index of" "java.log" | "java.logs"
-site:"{cli}" intext:"token" filetype:log "authenticate"
-site:"{cli}" intitle:index of ./jira-software
-site:"{cli}" intitle:index of "aws/credentials"
-site:"{cli}" intitle:"index of" *.xls
-site:"{cli}" db_password filetype:env
-site:"{cli}" intitle:index of settings.py
-site:"{cli}" inurl:admin filetype:txt
-site:"{cli}" intitle:"index of" ext:sql|xls|xml|json|csv
-site:"{cli}" "MYSQL_ROOT_PASSWORD:" ext:env OR ext:yml -git
-site:"{cli}" inurl:admin filetype:db
-site:"{cli}" inurl:"*admin | login" | inurl:.php | .asp
-filetype:log site:"{cli}"
-inurl:passwd filetype:txt site:"{cli}"
-intitle:"index of /*" site:"{cli}"
-intitle:"index of /" (passwd | password.txt) site:"{cli}"
-intitle:"index of /password" site:"{cli}"
-intitle:"index of /admin" site:"{cli}"
-intitle:"index of /" Parent Directory site:"{cli}"
-site:"{cli}" ext:txt | ext:doc | ext:docx | ext:odt | ext:pdf | ext:rtf | ext:sxw | ext:psw | ext:ppt | ext:pptx | ext:pps | ext:csv | ext:mdb
-intitle:"login" "admin" site:"{cli}"
-site:"{cli}" inurl:admin | administrator | adm | login | wp-login
-password filetype:docx site:"{cli}"
-"index of /" */* site:"{cli}"
-db_password filetype:env site:"{cli}"
-intext:"index of /.git" "parent directory" site:"{cli}"
-intitle:"index of" "properties.json" site:"{cli}"
-intitle:"index of " "config/db" site:"{cli}"
-site:"{cli}" intitle:index.o,
-site:"{cli}" ext:xml | ext:conf | ext:cnf | ext:reg | ext:inf | ext:rdp | ext:cfg | ext:txt | ext:ora | ext:ini
-site:"{cli}" ext:sql | ext:dbf | ext:mdb
-site:"{cli}" inurl:wp- | inurl:wp-content | inurl:plugins | inurl:uploads | inurl:themes | inurl:download
-site:"{cli}" ext:bkf | ext:bkp | ext:bak | ext:old | ext:backup
-site:*.*."{cli}"
-site:*."{cli}"
-site:"{cli}" inurl:"/phpinfo.php" | inurl:".htaccess" | inurl:"/.git" -github
-site:"{cli}" ext:action | ext:struts | ext:do
-site:"{cli}" inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config
-site:"{cli}" inurl:shell | inurl:backdoor | inurl:wso | inurl:cmd | shadow | passwd | boot.ini | inurl:backdoor
-site:"{cli}" ext:php intitle:phpinfo "published by the PHP Group"
-site:"{cli}" ext:doc | ext:docx | ext:odt | ext:pdf | ext:rtf | ext:sxw | ext:psw | ext:ppt | ext:pptx | ext:pps | ext:csv
-inurl:"{cli}" ext:sw,
-inurl:"/private" intext:"index of /" "config" site:"{cli}"
-intitle:"index of" "config.php" site:"{cli}"
-intext:"index of /" ".ovpn" site:"{cli}"
-intitle:"index of /" "styleci.yml" ".env" site:"{cli}"
-intitle:"index of /" "docker-compose.yml" ".env" site:"{cli}"
-intext:"index of" downloads" site:"{cli}"
-inurl: "phpmyadmin/setup/" site:"{cli}"
-intitle:"index of "conf.json" site:"{cli}"
-site:"{cli}" intext:"sql syntax near"
-site:"{cli}" intext:"sql syntax near" | intext:"syntax error has occurred" | intext:"incorrect syntax near" | intext:"unexpected end of SQL command" | intext:"Warning: mysql_connect()" | intext:"Warning: mysql_query()" | intext:"Warning: pg_connect()"
-site:"{cli}" intext:"sql syntax near" | intext:"incorrect syntax near"
-intitle:"index of "application.yml" site:"{cli}"
-inurl:adminpanel site:"{cli}"
-intitle:"index of" inurl:admin/php site:"{cli}"
-inurl:"phpmyadmin/setup/" site:"{cli}"
-inurl:ssh intitle:index of /files site:"{cli}"
-intitle:"index of" "database.sql" site:"{cli}"
-intext:"index of" smb.conf site:"{cli}"
-intitle:"index of" inurl:wp-json index.json site:"{cli}"
-intext:"index of" "config" site:"{cli}"
-intitle:"index of /" intext:.db site:"{cli}"
-intitle:index of "wc.db" site:"{cli}"
-intext:"index of" ".git" site:"{cli}"
-site:"{cli}" intext:login intext:username intext:password
-site:"{cli}" ext:ppt intext:password
-site:"{cli}" filetype:xls inurl:"email.xls"
-allintext:username filetype:log site:"{cli}"
-inurl:/proc/self/cwd site:"{cli}"
-"index of" "database.sql.zip" site:"{cli}"
-intitle:"index of" "WebServers.xml" site:"{cli}"
-filetype:xls inurl:"email.xls" site:"{cli}"
-intitle:"Index of" wp-admin site:"{cli}"
-intitle:"index of" "admin/sql/" site:"{cli}"
-intitle:"index of" "system/config" site:"{cli}"
-site:"{cli}" inurl:admin "@gmail.com"
-inurl:zoom.us/j and intext:scheduled for site:"{cli}"
-allintitle:restricted filetype:doc site:"{cli}"
-inurl:Dashboard.jspa intext:"Atlassian Jira Project Management Software" site:"{cli}"
-filetype:txt site:"{cli}"
-#Broad domain search with negative search
-site:"{cli}" -www -shop -share -ir -mfa
+site:"{cli}" ext:log | ext:txt | ext:conf | ext:cnf | ext:ini | ext:env | ext:sh | ext:bak | ext:backup | ext:swp | ext:old | ext:~ | ext:git | ext:svn | ext:htpasswd | ext:htaccess | ext:sql | ext:csv | ext:.git-credentials | ext:yaml | ext:yml | ext:ppk | ext:pem | ext:json | ext:cfg | ext:xml | ext:ps1 
+site:"{cli}" filename:connections.xml | filename:config.php | filename:config.json 
+site:"{cli}" ext:jsp | ext:asp | ext:php | ext:aspx | ext:pl | ext:cfm | ext:py | ext:rb 
+site:"{cli}" ext:pdf "username|user|pass|password|email|id|sensitive|internal" 
+site:"{cli}" ext:pdf "confidential" 
+site:"{cli}" ext:pdf "for internal use only" 
+site:"{cli}" ext:pdf "private" 
+site:"{cli}" ext:pdf "sensitive" 
+site:"{cli}" filename:.env 
+site:"{cli}" extension:csv admin 
+site:"{cli}" jdbc 
+site:"{cli}" Index of /.svn 
+site:"{cli}" intitle:"index of" "users.yml" | "admin.yml" | "config.yml" 
+site:"{cli}" intext:"Index of" intext:"backup.tar" 
+site:"{cli}" inurl:"wp-content" intitle:"index.of" intext:backup 
+site:"{cli}" intext:"Index of" intext:"backup.tar" 
+site:"{cli}" intitle:"index of" "config.php" 
+site:"{cli}" inurl:"/private" intext:"index of /" "config" 
+site:"{cli}" intitle:"index of " "config/db" 
+site:"{cli}" intitle:"index of /" "docker-compose.yml" "*.env" 
+site:"{cli}" intext:"index of /" "*.ovpn" 
+site:"{cli}" intitle:"index of /" "public.zip" 
+site:"{cli}" intitle:"index of /" "admin.zip" "admin/" 
+site:"{cli}" intitle:"index of "conf.json" 
+site:"{cli}" intitle:"index of "application.yml" 
+site:"{cli}" inurl:ssh intitle:index of /files 
+site:"{cli}" intitle:"index of" "database.sql" 
+site:"{cli}" intext:"index of" smb.con, 
+site:"{cli}" index of:admin.asp 
+site:"{cli}" intext:"index of" "config" 
+site:"{cli}" intitle:"index of /" intext:".db 
+site:"{cli}" intitle:index of "wc.db" 
+site:"{cli}" intitle: index of /secrets/ 
+site:"{cli}" intext:"index of" ".git" 
+site:"{cli}" intitle:"index of /database/migrations" 
+site:"{cli}" intext:"index of" ".sql" 
+site:"{cli}" intext:"index of" "phpMyAdmin" 
+site:"{cli}" intitle:Index of "/venv" 
+site:"{cli}" inurl:"admin/default.aspx" 
+site:"{cli}" inurl: /wp-includes/uploads 
+site:"{cli}" intitle:"index of" "release.sh" 
+site:"{cli}" intitle:"index of" "setup.sh" 
+site:"{cli}" intitle:"index of" "configure.sh" 
+site:"{cli}" intitle:"index of" "deploy.sh" 
+site:"{cli}" intitle:"index of /" intext:".env" 
+site:"{cli}" intext:"Index of" intext:"bitbucket-pipelines.yml" 
+site:"{cli}" inurl:/admin ext:config 
+site:"{cli}" intitle:"index of" "db.py" 
+site:"{cli}" intitle:"index of "cloud-config.yml" 
+site:"{cli}" index of /wp-admin.zip 
+site:"{cli}" intitle:"index of" aws/ 
+site:"{cli}" intitle:"index of" "catalina.out" 
+site:"{cli}" "index of" error_logs 
+site:"{cli}" intitle:"index of" "java.log" | "java.logs" 
+site:"{cli}" intext:"token" filetype:log "authenticate" 
+site:"{cli}" intitle:index of ./jira-software 
+site:"{cli}" intitle:index of "aws/credentials" 
+site:"{cli}" intitle:"index of" *.xls 
+site:"{cli}" db_password filetype:env 
+site:"{cli}" intitle:index of settings.py 
+site:"{cli}" inurl:admin filetype:txt 
+site:"{cli}" intitle:"index of" ext:sql|xls|xml|json|csv 
+site:"{cli}" "MYSQL_ROOT_PASSWORD:" ext:env OR ext:yml -git 
+site:"{cli}" inurl:admin filetype:db 
+site:"{cli}" inurl:"*admin | login" | inurl:.php | .asp 
+filetype:log site:"{cli}" 
+inurl:passwd filetype:txt site:"{cli}" 
+intitle:"index of /*" site:"{cli}" 
+intitle:"index of /" (passwd | password.txt) site:"{cli}" 
+intitle:"index of /password" site:"{cli}" 
+intitle:"index of /admin" site:"{cli}" 
+intitle:"index of /" Parent Directory site:"{cli}" 
+site:"{cli}" ext:txt | ext:doc | ext:docx | ext:odt | ext:pdf | ext:rtf | ext:sxw | ext:psw | ext:ppt | ext:pptx | ext:pps | ext:csv | ext:mdb 
+intitle:"login" "admin" site:"{cli}" 
+site:"{cli}" inurl:admin | administrator | adm | login | wp-login 
+password filetype:docx site:"{cli}" 
+"index of /" */* site:"{cli}" 
+db_password filetype:env site:"{cli}" 
+intext:"index of /.git" "parent directory" site:"{cli}" 
+intitle:"index of" "properties.json" site:"{cli}" 
+intitle:"index of " "config/db" site:"{cli}" 
+site:"{cli}" intitle:index.o, 
+site:"{cli}" ext:xml | ext:conf | ext:cnf | ext:reg | ext:inf | ext:rdp | ext:cfg | ext:txt | ext:ora | ext:ini 
+site:"{cli}" ext:sql | ext:dbf | ext:mdb 
+site:"{cli}" inurl:wp- | inurl:wp-content | inurl:plugins | inurl:uploads | inurl:themes | inurl:download 
+site:"{cli}" ext:bkf | ext:bkp | ext:bak | ext:old | ext:backup 
+site:*.*."{cli}" 
+site:*."{cli}" 
+site:"{cli}" inurl:"/phpinfo.php" | inurl:".htaccess" | inurl:"/.git" -github 
+site:"{cli}" ext:action | ext:struts | ext:do 
+site:"{cli}" inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config 
+site:"{cli}" inurl:shell | inurl:backdoor | inurl:wso | inurl:cmd | shadow | passwd | boot.ini | inurl:backdoor 
+site:"{cli}" ext:php intitle:phpinfo "published by the PHP Group" 
+site:"{cli}" ext:doc | ext:docx | ext:odt | ext:pdf | ext:rtf | ext:sxw | ext:psw | ext:ppt | ext:pptx | ext:pps | ext:csv 
+inurl:"{cli}" ext:sw, 
+inurl:"/private" intext:"index of /" "config" site:"{cli}" 
+intitle:"index of" "config.php" site:"{cli}" 
+intext:"index of /" ".ovpn" site:"{cli}" 
+intitle:"index of /" "styleci.yml" ".env" site:"{cli}" 
+intitle:"index of /" "docker-compose.yml" ".env" site:"{cli}" 
+intext:"index of" downloads" site:"{cli}" 
+inurl: "phpmyadmin/setup/" site:"{cli}" 
+intitle:"index of "conf.json" site:"{cli}" 
+site:"{cli}" intext:"sql syntax near" 
+site:"{cli}" intext:"sql syntax near" | intext:"syntax error has occurred" | intext:"incorrect syntax near" | intext:"unexpected end of SQL command" | intext:"Warning: mysql_connect()" | intext:"Warning: mysql_query()" | intext:"Warning: pg_connect()" 
+site:"{cli}" intext:"sql syntax near" | intext:"incorrect syntax near" 
+intitle:"index of "application.yml" site:"{cli}" 
+inurl:adminpanel site:"{cli}" 
+intitle:"index of" inurl:admin/php site:"{cli}" 
+inurl:"phpmyadmin/setup/" site:"{cli}" 
+inurl:ssh intitle:index of /files site:"{cli}" 
+intitle:"index of" "database.sql" site:"{cli}" 
+intext:"index of" smb.conf site:"{cli}" 
+intitle:"index of" inurl:wp-json index.json site:"{cli}" 
+intext:"index of" "config" site:"{cli}" 
+intitle:"index of /" intext:.db site:"{cli}" 
+intitle:index of "wc.db" site:"{cli}" 
+intext:"index of" ".git" site:"{cli}" 
+site:"{cli}" intext:login intext:username intext:password 
+site:"{cli}" ext:ppt intext:password 
+site:"{cli}" filetype:xls inurl:"email.xls" 
+allintext:username filetype:log site:"{cli}" 
+inurl:/proc/self/cwd site:"{cli}" 
+"index of" "database.sql.zip" site:"{cli}" 
+intitle:"index of" "WebServers.xml" site:"{cli}" 
+filetype:xls inurl:"email.xls" site:"{cli}" 
+intitle:"Index of" wp-admin site:"{cli}" 
+intitle:"index of" "admin/sql/" site:"{cli}" 
+intitle:"index of" "system/config" site:"{cli}" 
+site:"{cli}" inurl:admin "@gmail.com" 
+inurl:zoom.us/j and intext:scheduled for site:"{cli}" 
+allintitle:restricted filetype:doc site:"{cli}" 
+inurl:Dashboard.jspa intext:"Atlassian Jira Project Management Software" site:"{cli}" 
+filetype:txt site:"{cli}" 
+
+#Broad Domain Search with Negative Search
+site:"{cli}" -www -shop -share -ir -mfa 
+
 #SQL Injection Errors
-site:"{cli}" intext:"sql syntax near" | intext:"syntax error has occurred" | intext:"incorrect syntax near" | intext:"unexpected end of SQL command" | intext:"Warning: mysql_connect()" | intext:"Warning: mysql_query()" | intext:"Warning: pg_connect()"
-#PHP extension with parameters
-site:"{cli}" ext:php inurl:?
-#Java extension with parameters
-site:"{cli}" ext:jsp OR ext:do OR ext:action inurl:?
-#NET extension with parameters
-site:"{cli}" ext:aspx OR ext:asa OR ext:asp OR ext:asax inurl:?
+site:"{cli}" intext:"sql syntax near" | intext:"syntax error has occurred" | intext:"incorrect syntax near" | intext:"unexpected end of SQL command" | intext:"Warning: mysql_connect()" | intext:"Warning: mysql_query()" | intext:"Warning: pg_connect()" 
+
+#PHP Extension with Parameters
+site:"{cli}" ext:php inurl:? 
+
+#Java Extension with Parameters
+site:"{cli}" ext:jsp OR ext:do OR ext:action inurl:? 
+
+#NET Extension with Parameters
+site:"{cli}" ext:aspx OR ext:asa OR ext:asp OR ext:asax inurl:? 
+
 #Disclosed XSS and Open Redirects
-site:openbugbounty.org inurl:reports intext:"{cli}"
-#App frameworks and their exposures
-site:"{cli}" "Whoops! There was an error."
-site:"{cli}" inurl:/frontend_dev.php/$
-site:"{cli}" "SF_ROOT_DIR"
-site:"{cli}" Application Trace + nil:NilClass (10%) TBD
-site:"{cli}" "unexpected error" OR "Uncaught Exception" OR "fatal error" OR "Unknown column" OR "exception occurred"
-site:"{cli}" employee offers
-#XSS prone parameters
-inurl:lang= | inurl:name= | inurl:view= | inurl:name= | inurl:callback= | inurl:id= | inurl:q= | inurl:s= | inurl:keyword= | inurl:search= | inurl:page= | inurl:query= inurl:& site:"{cli}"
-#Open Redirect prone parameters
-inurl:page= | inurl:next= | inurl:host= | inurl:go= | inurl:goto= | inurl:file= | inurl:host= | inurl:redirect_to= | inurl:url= | inurl:redirect | inurl:src=http | inurl:r=http | inurl:return= | inurl:next= | inurl:redir= | inurl:http site:*.*."{cli}"
-inurl:page= | inurl:next= | inurl:host= | inurl:go= | inurl:goto= | inurl:file= | inurl:host= | inurl:redirect_to= | inurl:url= | inurl:redirect | inurl:src=http | inurl:r=http | inurl:return= | inurl:next= | inurl:redir= | inurl:http site:"{cli}"
+site:openbugbounty.org inurl:reports intext:"{cli}" 
+
+#App Frameworks and Their Exposures
+site:"{cli}" "Whoops! There was an error." 
+site:"{cli}" inurl:/frontend_dev.php/$ 
+site:"{cli}" "SF_ROOT_DIR" 
+site:"{cli}" Application Trace + nil:NilClass (10%) TBD 
+site:"{cli}" "unexpected error" OR "Uncaught Exception" OR "fatal error" OR "Unknown column" OR "exception occurred" 
+site:"{cli}" employee offers 
+
+#XSS Prone Parameters
+inurl:lang= | inurl:name= | inurl:view= | inurl:name= | inurl:callback= | inurl:id= | inurl:q= | inurl:s= | inurl:keyword= | inurl:search= | inurl:page= | inurl:query= inurl:& site:"{cli}" 
+
+#Open Redirect Prone Parameters
+inurl:page= | inurl:next= | inurl:host= | inurl:go= | inurl:goto= | inurl:file= | inurl:host= | inurl:redirect_to= | inurl:url= | inurl:redirect | inurl:src=http | inurl:r=http | inurl:return= | inurl:next= | inurl:redir= | inurl:http site:*.*."{cli}" 
+inurl:page= | inurl:next= | inurl:host= | inurl:go= | inurl:goto= | inurl:file= | inurl:host= | inurl:redirect_to= | inurl:url= | inurl:redirect | inurl:src=http | inurl:r=http | inurl:return= | inurl:next= | inurl:redir= | inurl:http site:"{cli}" 
+
 #SQLi Prone Parameters
-inurl:id= | inurl:pid= | inurl:category= | inurl:cat= | inurl:action= | inurl:sid= | inurl:dir= inurl:& site:*.*."{cli}"
-inurl:id= | inurl:pid= | inurl:category= | inurl:cat= | inurl:action= | inurl:sid= | inurl:dir= inurl:& site:"{cli}"
+inurl:id= | inurl:pid= | inurl:category= | inurl:cat= | inurl:action= | inurl:sid= | inurl:dir= inurl:& site:*.*."{cli}" 
+inurl:id= | inurl:pid= | inurl:category= | inurl:cat= | inurl:action= | inurl:sid= | inurl:dir= inurl:& site:"{cli}" 
+
 #SSRF Prone Parameters
-inurl:http | inurl:resource | inurl:resources | inurl:url= | inurl:path= | inurl:dest= | inurl:proxy= | inurl:html= | inurl:data= | inurl:domain= | inurl:page= inurl:& site:"{cli}"
+inurl:http | inurl:resource | inurl:resources | inurl:url= | inurl:path= | inurl:dest= | inurl:proxy= | inurl:html= | inurl:data= | inurl:domain= | inurl:page= inurl:& site:"{cli}" 
+
 #LFI Prone Parameters
-inurl:include | inurl:dir | inurl:detail= | inurl:file= | inurl:folder= | inurl:inc= | inurl:locate= | inurl:doc= | inurl:conf= inurl:& site:*.*."{cli}"
-inurl:include | inurl:dir | inurl:detail= | inurl:file= | inurl:folder= | inurl:inc= | inurl:locate= | inurl:doc= | inurl:conf= inurl:& site:"{cli}"
+inurl:include | inurl:dir | inurl:detail= | inurl:file= | inurl:folder= | inurl:inc= | inurl:locate= | inurl:doc= | inurl:conf= inurl:& site:*.*."{cli}" 
+inurl:include | inurl:dir | inurl:detail= | inurl:file= | inurl:folder= | inurl:inc= | inurl:locate= | inurl:doc= | inurl:conf= inurl:& site:"{cli}" 
+
 #RCE Prone Parameters
-inurl:cmd | inurl:exec= | inurl:query= | inurl:code= | inurl:do= | inurl:run= | inurl:read= | inurl:ping= inurl:& site:*.*."{cli}"
-inurl:cmd | inurl:exec= | inurl:query= | inurl:code= | inurl:do= | inurl:run= | inurl:read= | inurl:ping= inurl:& site:"{cli}"
-#High % inurl keywords
-inurl:config | inurl:env | inurl:setting | inurl:backup | inurl:admin | inurl:php site:*.*."{cli}"
-inurl:config | inurl:env | inurl:setting | inurl:backup | inurl:admin | inurl:php site:"{cli}"
-#Bug Bounty programs and Vulnerability Disclosure Programs
-site:"{cli}"/security.txt "bounty"
+inurl:cmd | inurl:exec= | inurl:query= | inurl:code= | inurl:do= | inurl:run= | inurl:read= | inurl:ping= inurl:& site:*.*."{cli}" 
+inurl:cmd | inurl:exec= | inurl:query= | inurl:code= | inurl:do= | inurl:run= | inurl:read= | inurl:ping= inurl:& site:"{cli}" 
+
+#High % Inurl Keywords
+inurl:config | inurl:env | inurl:setting | inurl:backup | inurl:admin | inurl:php site:*.*."{cli}" 
+inurl:config | inurl:env | inurl:setting | inurl:backup | inurl:admin | inurl:php site:"{cli}" 
+
+#Bug Bounty Programs and Vulnerability Disclosure Programs
+site:"{cli}"/security.txt "bounty" 
+
 #Apache Server Status Exposed
-site:"{cli}"/server-status apache
+site:"{cli}"/server-status apache 
+
 #WordPress
-inurl:"{cli}"/wp-admin/admin-ajax.php
+inurl:"{cli}"/wp-admin/admin-ajax.php 
+
 #Drupal
-intext:"Powered by" & intext:Drupal & inurl:user & inurl:"{cli}"
+intext:"Powered by" & intext:Drupal & inurl:user & inurl:"{cli}" 
+
 #Joomla
-site:"{cli}"/joomla/login'
+site:"{cli}"/joomla/login
