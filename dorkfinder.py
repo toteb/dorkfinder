@@ -121,6 +121,19 @@ def minimize_chrome_macos():
     except Exception as e:
         print(f"[!] Failed to minimize Chrome on macOS: {e}")
 
+#Minimize on Linux
+def minimize_chrome_linux():
+    if platform.system() != "Linux":
+        return
+    import subprocess
+
+    try:
+        subprocess.run(["wmctrl", "-r", "Google Chrome", "-b", "add,hidden"])
+        print("[INFO] Chrome window minimized (Linux).")
+
+    except Exception as e:
+        print(f"[!] Failed to minimize Chrome on Linux: {e}")
+
 # Grab google chrome for windows
 def find_chrome_binary():
     """
@@ -187,11 +200,15 @@ browser = uc.Chrome(
     headless=False  # must be False for real profile
 )
 
-# minimize on windows
+    # minimize on windows
 if platform.system() == 'Windows':
     minimize_chrome_window()
+    # minimize on macos
 elif platform.system() == 'Darwin':
     minimize_chrome_macos()
+else:
+    # minimize on windows
+    minimize_chrome_linux()
 
 if args.debug:
     print(browser.capabilities['browserVersion'])
