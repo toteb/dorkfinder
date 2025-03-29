@@ -1,7 +1,6 @@
 import platform
 import os
 import sys
-import pywinauto
 import subprocess
 
 # silent function
@@ -58,7 +57,7 @@ def minimize_chrome_macos():
 def minimize_chrome_linux():
     if platform.system() != "Linux":
         return
-        
+
     try:
         subprocess.run(["wmctrl", "-r", "Google Chrome", "-b", "add,hidden"])
         print("[INFO] Chrome window minimized (Linux).")
