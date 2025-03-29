@@ -113,11 +113,17 @@ with open(queries_path, 'r', encoding='utf-8') as f:
 
 # === Browser Setup ===
 options = uc.ChromeOptions()
-use_real_profile = True
+
+use_real_profile = ()
+if args.engine == 'google':
+    use_real_profile == True
+else:
+    use_real_profile = False
 
 # On Linux, avoid using real profile when running headless with non-Google engines
 headless_mode = args.engine != 'google'
 
+#profiles and executables  
 if platform.system() == 'Darwin':
     profile = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default")
     options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
@@ -128,6 +134,7 @@ else:
     profile = os.path.join(os.environ['LOCALAPPDATA'], "Google\\Chrome\\User Data")
     options.binary_location = find_chrome_binary()
 
+# use real profile specs
 if use_real_profile:
     options.add_argument(f"--user-data-dir={profile}")
 if platform.system() == 'Windows':
@@ -173,7 +180,7 @@ try:
     parser.print_banner()
     log("\n[*] Starting simple dork search...", silent=args.silent)
     if args.debug:
-        log(f"[INFO] Engines: {', '.join(ENABLED_ENGINES).capitalize()}", silent=args.silent)
+        log(f"[INFO] Engine: {', '.join(ENABLED_ENGINES).capitalize()}", silent=args.silent)
         log(f"[INFO] Headless mode: {'enabled' if headless_mode else 'disabled'}", silent=args.silent)
 
     CAPTCHA_COUNT = 0
