@@ -43,10 +43,7 @@ tor_process = None
 
 # check if tor is installed.
 def is_tor_installed():
-    if platform.system() == 'Windows':
-        return shutil.which("tor") is not None
-    else:
-        return shutil.which("tor") is not None or os.path.exists("/usr/bin/tor")
+    return shutil.which("tor") is not None or os.path.exists("/usr/bin/tor") or os.path.exists("/opt/homebrew/bin/tor")
 
 
 def rotate_tor_ip():
@@ -65,11 +62,11 @@ def rotate_tor_ip():
 
 # Start tor
 def start_tor():
+    import signal
     if not is_tor_installed():
         print("[!] Tor is not installed on this system.")
         try:
             print("[?] Would you like to install Tor now? (yes/no): ", end='', flush=True)
-            import signal
 
             def timeout_handler(signum, frame):
                 raise TimeoutError
