@@ -6,6 +6,7 @@ import subprocess
 import shutil
 import requests
 import threading
+import urllib.request
 
 shutdown_flag = False
 
@@ -108,11 +109,24 @@ def start_tor():
             elif platform.system() == 'Darwin':
                 subprocess.run(["brew", "install", "tor"])
             else:
-                print("[!] Automatic install not supported on this OS.")
-                return False
+                print("[*] Attempting Tor installation on Windows...")
+                tor_url = "https://www.torproject.org/dist/torbrowser/7.5.5/torbrowser-install-7.5.5_en-US.exe"
+                installer_path = os.path.join(os.getenv("TEMP", "."), "tor_install.exe")
 
-            print("[INFO] Tor installed successfully. Proceeding...")
-            return start_tor()
+                try:
+                    import urllib.request
+                    print(f"[INFO] Downloading Tor from: {tor_url}")
+                    urllib.request.urlretrieve(tor_url, installer_path)
+                    print("[INFO] Running installer...")
+                    subprocess.run([installer_path], check=True)
+                    print("[INFO] Once Tor is installed, open a terminal and run:")
+                    print("       tor.exe --service install")
+                    print("Then restart the script.")
+                    return False
+                except Exception as e:
+                    print(f"[!] Failed to download or run installer: {e}")
+                    return False
+
         elif answer in ['n', 'no']:
             print("[!] Tor installation declined by user.")
             return False
