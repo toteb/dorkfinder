@@ -14,7 +14,7 @@ uc.Chrome.__del__ = lambda self: None
 import json
 from utils import minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines, find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip, ensure_sudo_alive
 
-# Request sudo once
+# Request sudo only once
 ensure_sudo_alive()
 
 CAPTCHA_THRESHOLD = 5
