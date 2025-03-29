@@ -116,7 +116,7 @@ options = uc.ChromeOptions()
 
 use_real_profile = ()
 if args.engine == 'google':
-    use_real_profile == True
+    use_real_profile = True
 else:
     use_real_profile = False
 
