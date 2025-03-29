@@ -1,0 +1,8 @@
+{
+  "bravecompany1": {
+    "site:s3.amazonaws.com \"bravecompany1\"": "brave",
+    "site:blob.core.windows.net \"bravecompany1\"": "brave",
+    "site:googleapis.com \"bravecompany1\"": "brave"
+  },
+  "use_tor": false
+}

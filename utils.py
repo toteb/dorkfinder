@@ -140,6 +140,10 @@ def start_tor():
 
 # stop tor
 def stop_tor():
+    from dorkfinder import args
+    if not getattr(args, 'tor', False):
+        return
+
     try:
         if platform.system() == 'Windows':
             global tor_process
