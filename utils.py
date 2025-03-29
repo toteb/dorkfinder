@@ -66,8 +66,45 @@ def rotate_tor_ip():
 # Start tor
 def start_tor():
     if not is_tor_installed():
-        print("[!] Tor is not installed. Please install Tor before using this feature.")
-        return False
+        print("[!] Tor is not installed on this system.")
+        try:
+            print("[?] Would you like to install Tor now? (yes/no): ", end='', flush=True)
+            import signal
+
+            def timeout_handler(signum, frame):
+                raise TimeoutError
+
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(60)
+
+            answer = input().strip().lower()
+            signal.alarm(0)
+
+            if answer in ['y', 'yes']:
+                if platform.system() == 'Linux':
+                    subprocess.run(["sudo", "apt-get", "update", "-y"])
+                    subprocess.run(["sudo", "apt-get", "install", "-y", "tor"])
+                elif platform.system() == 'Darwin':
+                    subprocess.run(["brew", "install", "tor"])
+                else:
+                    print("[!] Automatic install not supported on this OS.")
+                    return False
+
+                print("[INFO] Tor installed successfully. Proceeding...")
+                return start_tor()
+            elif answer in ['n', 'no']:
+                print("[!] Tor installation declined by user.")
+                return False
+            else:
+                print("[!] Invalid input. Expected 'yes' or 'no'.")
+                return False
+
+        except TimeoutError:
+            print("\n[!] Timed out waiting for user input.")
+            return False
+        except Exception as e:
+            print(f"[!] Failed during interactive Tor install prompt: {e}")
+            return False
 
     try:
         if platform.system() == 'Windows':
