@@ -81,8 +81,13 @@ def start_tor():
                 print("[!] Could not locate tor.exe")
                 return False
         else:
-            subprocess.run(["systemctl", "start", "tor"], check=True)
-            print("[INFO] Tor service started.")
+            # Check if Tor is already active
+            result = subprocess.run(["systemctl", "is-active", "--quiet", "tor"])
+            if result.returncode == 0:
+                print("[INFO] Tor is already running.")
+            else:
+                subprocess.run(["sudo", "systemctl", "start", "tor"], check=True)
+                print("[INFO] Tor service started.")
             return True
     except Exception as e:
         print(f"[!] Failed to start Tor: {e}")
@@ -106,19 +111,28 @@ def stop_tor():
         print(f"[!] Failed to stop Tor: {e}")
 
 
-def get_current_tor_ip():
-    try:
-        response = requests.get("https://api.ipify.org", proxies={
-            'http': 'socks5h://127.0.0.1:9050',
-            'https': 'socks5h://127.0.0.1:9050'
-        }, timeout=10)
+def get_current_tor_ip(retries=5, delay=2):
+    """
+    Attempts to fetch the current Tor IP with retry logic.
 
-        if response.status_code == 200:
-            return response.text.strip()
-        else:
-            return "Unknown (non-200 response)"
-    except Exception as e:
-        return f"Error retrieving IP: {e}"
+    Args:
+        retries (int): Number of attempts before giving up.
+        delay (int): Delay between retries in seconds.
+
+    Returns:
+        str: Tor IP or an error message.
+    """
+    for attempt in range(retries):
+        try:
+            response = requests.get("https://api.ipify.org", proxies={
+                'http': 'socks5h://127.0.0.1:9050',
+                'https': 'socks5h://127.0.0.1:9050'
+            }, timeout=10)
+            if response.status_code == 200:
+                return response.text.strip()
+        except requests.RequestException:
+            time.sleep(delay)
+    return "Tor not ready (connection refused)"
 
 # Silent
 def log(msg, silent=False, **kwargs):
