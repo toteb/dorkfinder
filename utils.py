@@ -42,10 +42,32 @@ def ensure_sudo_alive():
 # Track Tor process if needed (Windows/manual)
 tor_process = None
 
-# check if tor is installed.
-def is_tor_installed():
-    return shutil.which("tor") is not None or os.path.exists("/usr/bin/tor") or os.path.exists("/opt/homebrew/bin/tor")
+# find tor on windows
 
+def find_tor_executable():
+    # Common install paths
+    candidates = [
+        os.path.join(os.path.expanduser("~"), "Desktop", "Tor Browser", "Browser", "TorBrowser", "Tor.exe"),
+        r"C:\Tor Browser\Browser\TorBrowser\Tor.exe",
+        r"C:\Program Files\Tor Browser\Browser\TorBrowser\Tor.exe",
+        r"C:\Program Files (x86)\Tor Browser\Browser\TorBrowser\Tor.exe"
+    ]
+
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+
+    return None
+
+# Check if Tor is installed
+tor_path = find_tor_executable()  # <-- call it here
+def is_tor_installed():
+    paths = [
+        "/usr/bin/tor",
+        "/opt/homebrew/bin/tor",
+        tor_path
+    ]
+    return shutil.which("tor") is not None or any(os.path.exists(p) for p in paths if p)
 
 def rotate_tor_ip():
     import socket
@@ -110,7 +132,7 @@ def start_tor():
                 subprocess.run(["brew", "install", "tor"])
             else:
                 print("[*] Attempting Tor installation on Windows...")
-                tor_url = "https://www.torproject.org/dist/torbrowser/7.5.5/torbrowser-install-7.5.5_en-US.exe"
+                tor_url = "https://www.torproject.org/dist/torbrowser/14.0.8/tor-browser-windows-x86_64-portable-14.0.8.exe"
                 installer_path = os.path.join(os.getenv("TEMP", "."), "tor_install.exe")
 
                 try:
