@@ -70,12 +70,15 @@ SEARCH_ENGINES = {
 ENABLED_ENGINES = list(SEARCH_ENGINES.keys()) if args.multi_engine else [args.engine]
 
 # === Load Queries from File ===
-with open('queries.txt', 'r', encoding='utf-8') as f:
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+queries_path = os.path.join(SCRIPT_DIR, 'queries.txt')
+
+with open(queries_path, 'r', encoding='utf-8') as f:
     RAW_QUERIES = [
         line.strip() for line in f
         if line.strip() and not line.strip().startswith('#')
     ]
-
+    
 # === Set up browser with real profile ===
 options = uc.ChromeOptions()
 
