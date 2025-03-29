@@ -2,6 +2,84 @@ import platform
 import os
 import sys
 import subprocess
+import shutil
+
+# Track Tor process if needed (Windows/manual)
+tor_process = None
+
+# check if tor is installed.
+def is_tor_installed():
+    if platform.system() == 'Windows':
+        return shutil.which("tor") is not None
+    else:
+        return shutil.which("tor") is not None or os.path.exists("/usr/bin/tor")
+
+
+def rotate_tor_ip():
+    import socket
+    import socks
+    import requests
+
+    try:
+        with socket.create_connection(("127.0.0.1", 9051)) as s:
+            s.send(b'AUTHENTICATE\r\n')
+            s.send(b'SIGNAL NEWNYM\r\n')
+            s.send(b'QUIT\r\n')
+    except Exception as e:
+        print(f"[!] Failed to rotate Tor IP: {e}")
+
+
+# Start tor
+def start_tor():
+    if not is_tor_installed():
+        print("[!] Tor is not installed. Please install Tor before using this feature.")
+        return False
+
+    try:
+        if platform.system() == 'Windows':
+            global tor_process
+            tor_path = shutil.which("tor")
+            if tor_path:
+                tor_process = subprocess.Popen([tor_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                print("[INFO] Tor process started on Windows.")
+                return True
+            else:
+                print("[!] Could not locate tor.exe")
+                return False
+        else:
+            subprocess.run(["systemctl", "start", "tor"], check=True)
+            print("[INFO] Tor service started.")
+            return True
+    except Exception as e:
+        print(f"[!] Failed to start Tor: {e}")
+        return False
+
+# stop tor
+def stop_tor():
+    try:
+        if platform.system() == 'Windows':
+            global tor_process
+            if tor_process:
+                tor_process.terminate()
+                tor_process.wait()
+                print("[INFO] Tor process terminated.")
+        else:
+            subprocess.run(["systemctl", "stop", "tor"], check=True)
+            print("[INFO] Tor service stopped.")
+    except Exception as e:
+        print(f"[!] Failed to stop Tor: {e}")
+
+# Silent
+def log(msg, silent=False, **kwargs):
+    if not silent:
+        print(msg, **kwargs)
+
+SEARCH_ENGINES = {
+    'brave': "https://search.brave.com/search?q=",
+    'bing': "https://www.bing.com/search?q=",
+    'ddg': "https://duckduckgo.com/?q=",
+    'google': "https://www.google.com/search?q=",
+}
 
 # Minimize on windows
 def minimize_chrome_window(timeout=10):
