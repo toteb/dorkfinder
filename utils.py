@@ -65,8 +65,18 @@ def start_tor():
     import signal
     if not is_tor_installed():
         print("[!] Tor is not installed on this system.")
-        try:
-            print("[?] Would you like to install Tor now? (yes/no): ", end='', flush=True)
+        answer = None
+        def ask_input():
+            nonlocal answer
+            try:
+                answer = input().strip().lower()
+            except Exception:
+                answer = None
+
+        print("[?] Would you like to install Tor now? (yes/no): ", end='', flush=True)
+
+        if platform.system() in ['Linux', 'Darwin']:
+            import signal
 
             def timeout_handler(signum, frame):
                 raise TimeoutError
@@ -74,33 +84,40 @@ def start_tor():
             signal.signal(signal.SIGALRM, timeout_handler)
             signal.alarm(60)
 
-            answer = input().strip().lower()
-            signal.alarm(0)
+            try:
+                answer = input().strip().lower()
+            finally:
+                signal.alarm(0)
 
-            if answer in ['y', 'yes']:
-                if platform.system() == 'Linux':
-                    subprocess.run(["sudo", "apt-get", "update", "-y"])
-                    subprocess.run(["sudo", "apt-get", "install", "-y", "tor"])
-                elif platform.system() == 'Darwin':
-                    subprocess.run(["brew", "install", "tor"])
-                else:
-                    print("[!] Automatic install not supported on this OS.")
-                    return False
-
-                print("[INFO] Tor installed successfully. Proceeding...")
-                return start_tor()
-            elif answer in ['n', 'no']:
-                print("[!] Tor installation declined by user.")
+        else:
+            # Windows alternative using threading
+            timer = threading.Timer(60, lambda: sys.stdin.close())
+            try:
+                timer.start()
+                ask_input()
+            except Exception:
+                print("\n[!] Timed out waiting for user input.")
                 return False
+            finally:
+                timer.cancel()
+
+        if answer in ['y', 'yes']:
+            if platform.system() == 'Linux':
+                subprocess.run(["sudo", "apt-get", "update", "-y"])
+                subprocess.run(["sudo", "apt-get", "install", "-y", "tor"])
+            elif platform.system() == 'Darwin':
+                subprocess.run(["brew", "install", "tor"])
             else:
-                print("[!] Invalid input. Expected 'yes' or 'no'.")
+                print("[!] Automatic install not supported on this OS.")
                 return False
 
-        except TimeoutError:
-            print("\n[!] Timed out waiting for user input.")
+            print("[INFO] Tor installed successfully. Proceeding...")
+            return start_tor()
+        elif answer in ['n', 'no']:
+            print("[!] Tor installation declined by user.")
             return False
-        except Exception as e:
-            print(f"[!] Failed during interactive Tor install prompt: {e}")
+        else:
+            print("[!] Invalid input. Expected 'yes' or 'no'.")
             return False
 
     try:
