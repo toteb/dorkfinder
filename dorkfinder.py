@@ -12,7 +12,7 @@ from datetime import datetime
 import undetected_chromedriver as uc
 uc.Chrome.__del__ = lambda self: None
 import json
-from utils import log, minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, find_chrome_binary
+from utils import minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, find_chrome_binary
 
 # === CLI ARGUMENTS ===
 class SilentArgumentParser(argparse.ArgumentParser):
@@ -52,6 +52,11 @@ parser.add_argument('--silent', action='store_true', default=False, help='Keeps 
 
 args = parser.parse_args()
 targets = [t.strip() for t in args.target.split(',') if t.strip()]
+
+# silent function
+def log(msg, **kwargs):
+    if not args.silent:
+        print(msg, **kwargs)
 
 # === Search Engine Map ===
 SEARCH_ENGINES = {
@@ -219,6 +224,7 @@ try:
 except KeyboardInterrupt:
     log("\n[!] Interrupted by user. Exiting gracefully...")
 
+finally:
     try:
         if browser:
             browser.quit()

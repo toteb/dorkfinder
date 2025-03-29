@@ -3,11 +3,6 @@ import os
 import sys
 import subprocess
 
-# silent function
-def log(msg, **kwargs):
-    if not args.silent:
-        print(msg, **kwargs)
-
 # Minimize on windows
 def minimize_chrome_window(timeout=10):
     if platform.system() != 'Windows':
