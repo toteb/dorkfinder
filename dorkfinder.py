@@ -134,8 +134,7 @@ if platform.system() == 'Windows':
     options.add_argument("--no-first-run")
     options.add_argument("--no-default-browser-check")
 else:
-    options.add_argument("--start-minimized")
-
+    
 if args.tor:
     if not start_tor():
         log("[!] Could not start Tor. Exiting.", silent=args.silent)
