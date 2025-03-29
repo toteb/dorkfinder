@@ -115,13 +115,24 @@ def start_tor():
                 print("[!] Could not locate tor.exe")
                 return False
         else:
-            # Check if Tor is already active
-            result = subprocess.run(["systemctl", "is-active", "--quiet", "tor"])
-            if result.returncode == 0:
-                print("[INFO] Tor is already running.")
+            if platform.system() == 'Darwin':
+                # Use brew path to run Tor manually in background
+                tor_path = "/opt/homebrew/opt/tor/bin/tor"
+                if os.path.exists(tor_path):
+                    subprocess.Popen([tor_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    print("[INFO] Tor started manually on macOS.")
+                    return True
+                else:
+                    print("[!] Tor binary not found at expected Homebrew location.")
+                    return False
             else:
-                subprocess.run(["sudo", "systemctl", "start", "tor"], check=True)
-                print("[INFO] Tor service started.")
+                # Check if Tor is already active
+                result = subprocess.run(["systemctl", "is-active", "--quiet", "tor"])
+                if result.returncode == 0:
+                    print("[INFO] Tor is already running.")
+                else:
+                    subprocess.run(["sudo", "systemctl", "start", "tor"], check=True)
+                    print("[INFO] Tor service started.")
             return True
     except Exception as e:
         print(f"[!] Failed to start Tor: {e}")
