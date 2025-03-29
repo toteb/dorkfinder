@@ -12,16 +12,10 @@ from datetime import datetime
 import undetected_chromedriver as uc
 uc.Chrome.__del__ = lambda self: None
 import json
-from utils import (
-    minimize_chrome_window,
-    minimize_chrome_macos,
-    minimize_chrome_linux,
-    find_chrome_binary,
-    is_tor_installed,
-    start_tor,
-    stop_tor,
-    rotate_tor_ip
-)
+from utils import minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines, find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip, ensure_sudo_alive
+
+# Request sudo once
+ensure_sudo_alive()
 
 CAPTCHA_THRESHOLD = 5
 PROGRESS_FILE = 'progress.json'
@@ -36,7 +30,7 @@ class SilentArgumentParser(argparse.ArgumentParser):
 ██║  ██║██║   ██║██╔══██╗██╔═██╗ ██╔══╝  ██║██║╚██╗██║██║  ██║██╔══╝  ██╔══██╗
 ██████╔╝╚██████╔╝██║  ██║██║  ██╗██║     ██║██║ ╚████║██████╔╝███████╗██║  ██║
 ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝
-                            Headless DorkFinder by @mcn1k
+                            Simple DorkFinder by @mcn1k
 """
         print(banner)
 
@@ -50,31 +44,55 @@ class SilentArgumentParser(argparse.ArgumentParser):
         self.print_banner()
         super().print_help()
 
-parser = SilentArgumentParser()
-parser.add_argument('-t', metavar='example.com', required=True, help='Target domain or comma-separated list')
-parser.add_argument('-o', action='store_true', help='Write output to a timestamped file')
-parser.add_argument('--engine', choices=['brave', 'bing', 'ddg', 'google'], default='google')
-parser.add_argument('--multi-engine', action='store_true', help='Use all search engines (not recommended)', dest='multi_engine')
-parser.add_argument('--debug', action='store_true', help='Log additional data for useful for debuging')
-parser.add_argument('--sleep', type=int, default=60, help='Sleep between queries')
-parser.add_argument('--silent', action='store_true', help='Keeps everything nice and quiet')
+parser = SilentArgumentParser(
+    description='Simple dorkfinder by @mcn1k',
+    usage='dorkfinder.py -t example.com [-o] [-e {brave,bing,ddg,google}] [-me] [--debug] [-sl 60] [--si]'
+)
+parser.add_argument('-t', metavar='example.com', help='Target domain (or comma-separated list)', dest='target', type=str)
+parser.add_argument('-o', action='store_true', help='Write output to a timestamped file', dest='output')
+parser.add_argument('-e', choices=['brave', 'bing', 'ddg', 'google'], default='google', help='Search engine to use. Default: Google Chrome', dest='engine')
+parser.add_argument('-me', action='store_true', help='Use all search engines(not recommended)', dest='multi_engine')
+parser.add_argument('-d', action='store_true', help='Enable debug output (page source snippet)', dest='debug')
+parser.add_argument('-sl', type=int, default=60, help='Sleep time between requests (in seconds)', dest='sleep')
+parser.add_argument('-si', action='store_true', default=False, help='Keeps everything nice and quiet', dest='silent')
 parser.add_argument('--tor', action='store_true', help='Enable Tor routing')
-parser.add_argument('--resume', action='store_true', help='Resume from last saved progress')
+parser.add_argument('--resume', action='store_true', help='Resume from last progress')
+
+# FIRE HERE
 args = parser.parse_args()
 
-# Search engines
-ENABLED_ENGINES = list(SEARCH_ENGINES.keys()) if args.multi_engine else [args.engine]
-targets = [t.strip() for t in args.target.split(',') if t.strip()]
+# Enforce -t only if --resume is not used
+if not args.resume and not args.target:
+    parser.error("the following arguments are required: -t (unless using --resume)")
 
-# === PROGRESS LOADING ===
+# === PROGRESS LOADING + TARGET RESUME ===
 progress = {}
-if args.resume and os.path.exists(PROGRESS_FILE):
-    with open(PROGRESS_FILE, 'r') as f:
-        progress = json.load(f)
+if args.resume:
+    args.output = True
+    if os.path.exists(PROGRESS_FILE):
+        with open(PROGRESS_FILE, 'r') as f:
+            progress = json.load(f)
+        if not args.target:
+            if progress:
+                args.target = list(progress.keys())[0]
+                print(f"[INFO] Resuming previous target from progress: {args.target}")
+            else:
+                print("[!] Progress file found but empty. Please provide a target with -t.")
+                sys.exit(1)
+    else:
+        print("[!] --resume flag used, but no progress file found.")
+        print("[!] Either remove --resume or run with -t to start fresh.")
+        sys.exit(1)
 
 def save_progress():
+    progress['use_tor'] = args.tor
     with open(PROGRESS_FILE, 'w') as f:
         json.dump(progress, f, indent=2)
+
+# SEARCH ENGINES
+SEARCH_ENGINES = get_search_engines()
+ENABLED_ENGINES = list(SEARCH_ENGINES.keys()) if args.multi_engine else [args.engine]
+targets = [t.strip() for t in args.target.split(',')] if args.target else [] 
 
 # === Load Queries ===
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -107,6 +125,7 @@ if args.tor:
         sys.exit(1)
     start_tor()
     options.add_argument('--proxy-server=socks5://127.0.0.1:9050')
+    log(f"[INFO] Tor is active. Current Tor IP: {tor_ip}")
 
 browser = uc.Chrome(options=options, version_main=134, headless=False)
 if platform.system() == 'Windows':
@@ -128,7 +147,7 @@ if args.output or args.silent:
 
 try:
     parser.print_banner()
-    log("\n[*] Starting headless dork search...", silent=args.silent)
+    log("\n[*] Starting simple dork search...", silent=args.silent)
     log(f"[INFO] Engines: {', '.join(ENABLED_ENGINES).capitalize()}", silent=args.silent)
 
     CAPTCHA_COUNT = 0
@@ -137,7 +156,17 @@ try:
     for cli in targets:
         log(f"[+] Target: {cli}", silent=args.silent)
         QUERIES = [q.replace('{cli}', cli) for q in RAW_QUERIES]
+        
+        if cli not in progress:
+            progress[cli] = {}
+
         for query in QUERIES:
+            for engine_key in ENABLED_ENGINES:
+                if progress[cli].get(query) == engine_key:
+                    if args.debug:
+                        log(f"[DEBUG] Skipping already completed query: {query} [{engine_key}]", silent=args.silent)
+                    continue
+
             for engine_key in ENABLED_ENGINES:
                 if progress.get(cli, {}).get(query, '') == engine_key:
                     continue  # already done
@@ -162,7 +191,11 @@ try:
                         stop_tor()
                         sys.exit(1)
                     if args.tor:
+                        log("[*] Rotating Tor IP...")
                         rotate_tor_ip()
+                        time.sleep(5)  # brief wait for Tor to stabilize
+                        tor_ip = get_current_tor_ip()
+                        log(f"[INFO] New Tor IP: {tor_ip}")
                         continue
                     else:
                         log("[!] Waiting 5 mins before retry...", silent=args.silent)

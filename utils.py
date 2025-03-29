@@ -1,8 +1,23 @@
 import platform
 import os
 import sys
+import time
 import subprocess
 import shutil
+import requests
+import threading
+
+def keep_sudo_alive():
+    """Keeps sudo alive during long script execution."""
+    def loop():
+        while True:
+            try:
+                subprocess.run("sudo -v", shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+                time.sleep(60)
+            except Exception:
+                break
+    t = threading.Thread(target=loop, daemon=True)
+    t.start()
 
 # Track Tor process if needed (Windows/manual)
 tor_process = None
@@ -69,17 +84,34 @@ def stop_tor():
     except Exception as e:
         print(f"[!] Failed to stop Tor: {e}")
 
+
+def get_current_tor_ip():
+    try:
+        response = requests.get("https://api.ipify.org", proxies={
+            'http': 'socks5h://127.0.0.1:9050',
+            'https': 'socks5h://127.0.0.1:9050'
+        }, timeout=10)
+
+        if response.status_code == 200:
+            return response.text.strip()
+        else:
+            return "Unknown (non-200 response)"
+    except Exception as e:
+        return f"Error retrieving IP: {e}"
+
 # Silent
 def log(msg, silent=False, **kwargs):
     if not silent:
         print(msg, **kwargs)
 
-SEARCH_ENGINES = {
-    'brave': "https://search.brave.com/search?q=",
-    'bing': "https://www.bing.com/search?q=",
-    'ddg': "https://duckduckgo.com/?q=",
-    'google': "https://www.google.com/search?q=",
-}
+
+def get_search_engines():
+    return {
+        'brave': "https://search.brave.com/search?q=",
+        'bing': "https://www.bing.com/search?q=",
+        'ddg': "https://duckduckgo.com/?q=",
+        'google': "https://www.google.com/search?q=",
+    }
 
 # Minimize on windows
 def minimize_chrome_window(timeout=10):
