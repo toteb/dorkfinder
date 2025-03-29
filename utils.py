@@ -148,10 +148,24 @@ def stop_tor():
                 tor_process.wait()
                 print("[INFO] Tor process terminated.")
         else:
-            # Refresh sudo session to avoid password prompt
-            subprocess.run("sudo -v", shell=True, check=True)
-            subprocess.run(["sudo", "systemctl", "stop", "tor"], check=True)
-            print("[INFO] Tor service stopped.")
+            if platform.system() == 'Darwin':
+                try:
+                    subprocess.run(["sudo", "-v"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    brew_services_path = "/opt/homebrew/bin/brew"
+                    if os.path.exists(brew_services_path):
+                        subprocess.run(["sudo", brew_services_path, "services", "stop", "tor"], check=True)
+                        print("[INFO] Tor service stopped using Homebrew.")
+                    else:
+                        print("[!] Could not find Homebrew service manager to stop Tor.")
+                except Exception as e:
+                    print(f"[!] Failed to stop Tor with Homebrew: {e}")
+            else:
+                try:
+                    subprocess.run(["sudo", "-n", "true"], check=True)
+                    subprocess.run(["sudo", "-n", "systemctl", "stop", "tor"], check=True)
+                    print("[INFO] Tor service stopped.")
+                except Exception as e:
+                    print(f"[!] Failed to stop Tor: {e}")
     except Exception as e:
         print(f"[!] Failed to stop Tor: {e}")
 
