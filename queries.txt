@@ -14,7 +14,7 @@ inurl:www.dropbox.com/s/ "{cli}"
 site:box.com/s "{cli}"
 site:docs.google.com inurl:"/d/" "{cli}"
 #Sensitive Parameters
-inurl:email= | inurl:phone= | inurl:password= | inurl:secret= inurl:& site:"{cli}"
+site:"{cli}" (inurl:email= OR inurl:phone= OR inurl:password= OR inurl:secret=)
 site:prezi.com "{cli}"
 site:bitbucket.org inurl:"{cli}"
 site:zoom.us inurl:"{cli}"
