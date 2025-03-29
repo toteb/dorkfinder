@@ -23,7 +23,7 @@ class SilentArgumentParser(argparse.ArgumentParser):
 ██║  ██║██║   ██║██╔══██╗██╔═██╗ ██╔══╝  ██║██║╚██╗██║██║  ██║██╔══╝  ██╔══██╗
 ██████╔╝╚██████╔╝██║  ██║██║  ██╗██║     ██║██║ ╚████║██████╔╝███████╗██║  ██║
 ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝
-                            Headless DorkFinder by @mcn1k
+                            Basic dorkfinder by @mcn1k
 """
         print(banner)
 
@@ -101,7 +101,27 @@ def minimize_chrome_window(timeout=10):
     except Exception as e:
         print(f"[!] Failed to minimize Chrome window: {e}")
 
-# Grab google chrome foe windows
+# Minimize on macOS
+def minimize_chrome_macos():
+    if platform.system() != "Darwin":
+        return
+
+    try:
+        import subprocess
+        script = '''
+        tell application "System Events"
+            tell process "Google Chrome"
+                keystroke "m" using {command down}
+            end tell
+        end tell
+        '''
+        subprocess.run(["osascript", "-e", script])
+        print("[INFO] Chrome minimize keystroke sent (macOS).")
+
+    except Exception as e:
+        print(f"[!] Failed to minimize Chrome on macOS: {e}")
+
+# Grab google chrome for windows
 def find_chrome_binary():
     """
     Finds the Chrome executable path in common locations.
@@ -168,7 +188,10 @@ browser = uc.Chrome(
 )
 
 # minimize on windows
-minimize_chrome_window() 
+if platform.system() == 'Windows':
+    minimize_chrome_window()
+elif platform.system() == 'Darwin':
+    minimize_chrome_macos()
 
 if args.debug:
     print(browser.capabilities['browserVersion'])

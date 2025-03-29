@@ -4,4 +4,4 @@ webdriver-manager
 undetected-chromedriver
 beautifulsoup4
 setuptools
-pygetwindow; platform_system == "Windows"
+pywinauto; platform_system == "Windows"
