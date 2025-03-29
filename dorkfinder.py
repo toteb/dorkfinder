@@ -75,6 +75,11 @@ if args.resume:
         if not args.target:
             if progress:
                 args.target = list(progress.keys())[0]
+                if not args.multi_engine:
+                    first_target = args.target
+                    completed_engines = list(progress.get(first_target, {}).values())
+                    if completed_engines:
+                        args.engine = completed_engines[0]
                 print(f"[INFO] Resuming previous target from progress: {args.target}")
             else:
                 print("[!] Progress file found but empty. Please provide a target with -t.")
@@ -129,17 +134,19 @@ if args.tor:
     if "Error" in tor_ip:
         log(f"[!] {tor_ip}", silent=args.silent)
 
-browser = uc.Chrome(options=options, version_main=134, headless=False)
-if platform.system() == 'Windows':
-    minimize_chrome_window()
-elif platform.system() == 'Darwin':
-    minimize_chrome_macos()
-else:
-    minimize_chrome_linux()
+headless_mode = not args.multi_engine and args.engine != 'google'
+browser = uc.Chrome(options=options, version_main=134, headless=headless_mode)
+if not headless_mode:
+    if platform.system() == 'Windows':
+        minimize_chrome_window()
+    elif platform.system() == 'Darwin':
+        minimize_chrome_macos()
+    else:
+        minimize_chrome_linux()
 
 if args.debug:
-    log(browser.capabilities['browserVersion'], silent=args.silent)
-    log(uc.__version__, silent=args.silent)
+    log(f"Browser version: {browser.capabilities['browserVersion']}", silent=args.silent)
+    log(f"Undetected driver version: {uc.__version__}", silent=args.silent)
 
 output_file = None
 if args.output or args.silent:
@@ -150,10 +157,12 @@ if args.output or args.silent:
 try:
     parser.print_banner()
     log("\n[*] Starting simple dork search...", silent=args.silent)
-    log(f"[INFO] Engines: {', '.join(ENABLED_ENGINES).capitalize()}", silent=args.silent)
+    if args.debug:
+        log(f"[INFO] Engines: {', '.join(ENABLED_ENGINES).capitalize()}", silent=args.silent)
+        log(f"[INFO] Headless mode: {'enabled' if headless_mode else 'disabled'}", silent=args.silent)
 
     CAPTCHA_COUNT = 0
-    SKIP = ["google.com", "support.google.com", "bing.com", "microsoft.com"]
+    SKIP = ["google.com", "support.google.com", "bing.com", "microsoft.com", "duckduckgo.com", "duck.ai", "apple.com"]
 
     for cli in targets:
         log(f"[+] Target: {cli}", silent=args.silent)
@@ -238,14 +247,36 @@ try:
     log("\n[+] Finished all queries.", silent=args.silent)
 
 except KeyboardInterrupt:
+    sys.exit(0)
     log("\n[!] Interrupted by user. Saving progress and exiting...", silent=args.silent)
-    save_progress()
+    try:
+        save_progress()
+    except Exception as e:
+        log(f"[!] Failed to save progress: {e}", silent=args.silent)
+
     try:
         if browser:
             browser.quit()
-    except: pass
-    ensure_sudo_alive()  # Refresh sudo before stopping Tor
+    except Exception as e:
+        log(f"[!] Failed to quit browser: {e}", silent=args.silent)
+
+    try:
+        stop_tor()
+    except Exception as e:
+        log(f"[!] Failed to stop Tor: {e}", silent=args.silent)
+
+    try:
+        if output_file:
+            output_file.close()
+    except Exception as e:
+        log(f"[!] Failed to close output file: {e}", silent=args.silent)
+
+except Exception as e:
+    log(f"[!] An error occurred: {e}", silent=args.silent)
+    save_progress()
+    if browser:
+        browser.quit()
     stop_tor()
     if output_file:
         output_file.close()
-    sys.exit(0)
+    sys.exit(1)
