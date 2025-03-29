@@ -7,6 +7,8 @@ import shutil
 import requests
 import threading
 
+shutdown_flag = False
+
 def ensure_sudo_alive():
     """
     On Linux/macOS, request sudo access once and keep it alive.
@@ -26,7 +28,8 @@ def ensure_sudo_alive():
             sys.exit(1)
 
     def keep_sudo_alive():
-        while True:
+        global shutdown_flag
+        while not shutdown_flag:
             try:
                 subprocess.run("sudo -v", shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
                 time.sleep(60)
@@ -95,7 +98,9 @@ def stop_tor():
                 tor_process.wait()
                 print("[INFO] Tor process terminated.")
         else:
-            subprocess.run(["systemctl", "stop", "tor"], check=True)
+            # Refresh sudo session to avoid password prompt
+            subprocess.run("sudo -v", shell=True, check=True)
+            subprocess.run(["sudo", "systemctl", "stop", "tor"], check=True)
             print("[INFO] Tor service stopped.")
     except Exception as e:
         print(f"[!] Failed to stop Tor: {e}")

@@ -125,6 +125,7 @@ if args.tor:
         sys.exit(1)
     start_tor()
     options.add_argument('--proxy-server=socks5://127.0.0.1:9050')
+    tor_ip = get_current_tor_ip()
     log(f"[INFO] Tor is active. Current Tor IP: {tor_ip}")
 
 browser = uc.Chrome(options=options, version_main=134, headless=False)
