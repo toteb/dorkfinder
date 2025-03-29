@@ -7,17 +7,33 @@ import shutil
 import requests
 import threading
 
-def keep_sudo_alive():
-    """Keeps sudo alive during long script execution."""
-    def loop():
+def ensure_sudo_alive():
+    """
+    On Linux/macOS, request sudo access once and keep it alive.
+    On Windows, this function does nothing.
+    """
+
+    if platform.system() not in ['Linux', 'Darwin']:
+        return  # No sudo needed on Windows
+
+    result = subprocess.run("sudo -n true", shell=True)
+    if result.returncode != 0:
+        # We don’t have sudo; ask for it interactively
+        try:
+            subprocess.run("sudo -v", shell=True, check=True)
+        except subprocess.CalledProcessError:
+            print("[!] Sudo privileges are required but could not be obtained.")
+            sys.exit(1)
+
+    def keep_sudo_alive():
         while True:
             try:
                 subprocess.run("sudo -v", shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
                 time.sleep(60)
             except Exception:
                 break
-    t = threading.Thread(target=loop, daemon=True)
-    t.start()
+
+    threading.Thread(target=keep_sudo_alive, daemon=True).start()
 
 # Track Tor process if needed (Windows/manual)
 tor_process = None
