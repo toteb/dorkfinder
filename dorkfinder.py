@@ -206,19 +206,19 @@ if not headless_mode:
         log(f"[DEBUG] Undetected driver version: {uc.__version__}", silent=args.silent)
 
 output_file = None
-    if args.output or args.silent:
-        safe = '_'.join(t.replace('.', '_') for t in targets)
-        output_filename = f'dorkfinder_results_{safe}.txt'
-        output_file = open(output_filename, 'a', encoding='utf-8')
-        last_logged_engine = None
-        if os.path.exists(output_filename):
-            with open(output_filename, 'r', encoding='utf-8') as f:
-                for line in f:
-                    if line.startswith("### ENGINE :"):
-                        last_logged_engine = line.strip().split(":")[1].strip()
-        if output_file and args.engine != last_logged_engine:
-            output_file.write(f"\n### ENGINE : {args.engine.upper()}\n")
-            output_file.flush()
+if args.output or args.silent:
+    safe = '_'.join(t.replace('.', '_') for t in targets)
+    output_filename = f'dorkfinder_results_{safe}.txt'
+    output_file = open(output_filename, 'a', encoding='utf-8')
+    last_logged_engine = None
+    if os.path.exists(output_filename):
+        with open(output_filename, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.startswith("### ENGINE :"):
+                    last_logged_engine = line.strip().split(":")[1].strip()
+    if output_file and args.engine != last_logged_engine:
+        output_file.write(f"\n### ENGINE : {args.engine.upper()}\n")
+        output_file.flush()
 
 try:
     if not args.resume:
