@@ -365,6 +365,7 @@ try:
             json.dump(failed_queries, fq, indent=2)
     
     log("\n[+] Finished all queries.", silent=args.silent)
+    sys.exit(0)
 
 except KeyboardInterrupt:
     log("\n[!] Interrupted by user. Saving progress and exiting...", silent=args.silent)
