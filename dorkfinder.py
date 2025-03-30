@@ -298,7 +298,8 @@ try:
                     progress[cli] = {}
                 progress[cli][query] = {
                     "engine": engine_key,
-                    "query_number": query_index
+                    "query_number": query_index,
+                    "added": datetime.now().isoformat()
                 }
                 save_progress()
 
