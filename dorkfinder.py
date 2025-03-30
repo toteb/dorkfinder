@@ -53,11 +53,12 @@ parser.add_argument('-t', metavar='example.com', help='Target domain (or comma-s
 parser.add_argument('-o', action='store_true', help='Write output to a timestamped file', dest='output')
 parser.add_argument('-e', choices=['brave', 'bing', 'ddg', 'google'], default='google', help='Search engine to use. Default: Google Chrome', dest='engine')
 parser.add_argument('-d', action='store_true', help='Enable debug output (page source snippet)', dest='debug')
-parser.add_argument('--sleep', type=int, default=60, help='Sleep time between requests (in seconds)', dest='sleep')
+parser.add_argument('-r', action='store_true', help='Resume from last progress', dest='resume')
 parser.add_argument('-s', action='store_true', default=False, help='Keeps everything nice and quiet', dest='silent')
+parser.add_argument('--sleep', type=int, default=60, help='Sleep time between requests (in seconds)', dest='sleep')
 parser.add_argument('--tor', action='store_true', help='Enable Tor routing')
 parser.add_argument('--notor', action='store_true', help='Disables Tor routing for --resume')
-parser.add_argument('-r', action='store_true', help='Resume from last progress', dest='resume')
+
 
 # FIRE HERE
 args = parser.parse_args()
