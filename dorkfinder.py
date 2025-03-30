@@ -277,17 +277,23 @@ try:
                         time.sleep(1800)
                         continue
                     
-                found = False
+                found_links = set()
                 for link in browser.find_elements(By.XPATH, '//a[contains(@href, "http")]'):
                     href = link.get_attribute('href')
                     if href and not any(domain in href for domain in SKIP):
+                        found_links.add(href)
+
+                if found_links:
+                    for href in sorted(found_links):
                         log(f"   -> {href}", silent=args.silent)
                         if output_file:
                             output_file.write(f"{href}\n")
                             output_file.flush()
                         if args.debug:
                             logging.debug(f"Found link: {href}")
-                        found = True
+                    found = True
+                else:
+                    found = False
 
                 if not found:
                     log("   -> No relevant links found.", silent=args.silent)
