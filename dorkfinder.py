@@ -249,7 +249,13 @@ try:
                     normalized_query in progress[cli]
                     and progress[cli][normalized_query]['engine'] == engine_key
                 )
-                status_msg = "Skipped" if is_already_done else f"Searching Q{query_index}"
+                if is_already_done:
+                    status_msg = "Skipped"
+                else: 
+                    if args.debug:
+                        f"Searching Q{query_index}"
+                    else:
+                        f"Searching {query_index}"
                 log(f"[+] {status_msg}: {query} [Engine: {engine_key}]", silent=args.silent)
 
                 if normalized_query in progress[cli] and progress[cli][normalized_query]['engine'] == engine_key:
