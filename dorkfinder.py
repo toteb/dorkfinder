@@ -199,9 +199,9 @@ if args.debug:
 
 output_file = None
 if args.output or args.silent:
-    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     safe = '_'.join(t.replace('.', '_') for t in targets)
-    output_file = open(f'dorkfinder_results_{safe}_{ts}.txt', 'w', encoding='utf-8')
+    output_filename = f'dorkfinder_results_{safe}.txt'
+    output_file = open(output_filename, 'a', encoding='utf-8')
 
 try:
     if not args.resume:
