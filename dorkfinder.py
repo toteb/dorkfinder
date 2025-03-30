@@ -14,6 +14,7 @@ import undetected_chromedriver as uc
 uc.Chrome.__del__ = lambda self: None
 import json
 from utils import minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines, find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip, ensure_sudo_alive
+COMPLETED_SUCCESSFULLY = False
 
 # Request sudo only once
 ensure_sudo_alive()
@@ -371,6 +372,7 @@ try:
         logging.debug(f"Summary: {len(progress.get(args.target, {}))} queries recorded for target '{args.target}'")
 
     log("\n[+] Finished all queries.", silent=args.silent)
+    COMPLETED_SUCCESSFULLY = True
     sys.exit(0)
 
 except KeyboardInterrupt:
@@ -393,6 +395,8 @@ except KeyboardInterrupt:
             logging.debug(f"Exception occurred: {str(e)}")
 
 except Exception as e:
+    if COMPLETED_SUCCESSFULLY:
+        sys.exit(0)
     log(f"[!] An error occurred: {e}", silent=args.silent)
     if args.debug:
         logging.debug(f"Exception occurred: {str(e)}")
