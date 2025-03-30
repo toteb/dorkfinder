@@ -308,13 +308,11 @@ try:
                     "added": datetime.now().isoformat()
                 }
                 save_progress()
-
-                log(f"   -> Sleeping {args.sleep}s ", end='', flush=True, silent=args.silent)
-                for i in range(args.sleep):
-                    for cursor in '|/-\\':
-                        sys.stdout.write(f'\r   -> Sleeping {args.sleep}s {cursor}')
-                        sys.stdout.flush()
-                        time.sleep(0.25)
+                
+                for remaining in range(args.sleep, 0, -1):
+                    sys.stdout.write(f'\r   -> Sleeping... {remaining}s remaining')
+                    sys.stdout.flush()
+                    time.sleep(1)
                 log('\r   -> Done sleeping.', silent=args.silent)
 
     ensure_sudo_alive()
