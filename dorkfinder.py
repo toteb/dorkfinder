@@ -319,7 +319,7 @@ try:
                     sys.stdout.write(f'\r   -> Sleeping {remaining}s ')
                     sys.stdout.flush()
                     time.sleep(1)
-                log('   -> Back to work.', silent=args.silent)
+                log(' -> Back to work.', silent=args.silent)
 
     ensure_sudo_alive()
     browser.quit()
