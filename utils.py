@@ -10,6 +10,7 @@ import urllib.request
 
 shutdown_flag = False
 
+# Ensure sudo for darwin/linux
 def ensure_sudo_alive():
     """
     On Linux/macOS, request sudo access once and keep it alive.
@@ -42,8 +43,7 @@ def ensure_sudo_alive():
 # Track Tor process if needed (Windows/manual)
 tor_process = None
 
-# find tor on windows
-
+# find TOR executable on windows
 def find_tor_executable():
     # Common install paths
     candidates = [
@@ -69,6 +69,7 @@ def is_tor_installed():
     ]
     return shutil.which("tor") is not None or any(os.path.exists(p) for p in paths if p)
 
+# Rotate TOR 
 def rotate_tor_ip():
     import socket
     import socks
@@ -83,7 +84,6 @@ def rotate_tor_ip():
             s.send(b'QUIT\r\n')
     except Exception as e:
         print(f"[!] Failed to rotate Tor IP: {e}")
-
 
 # Start tor
 def start_tor():
@@ -256,7 +256,6 @@ def get_current_tor_ip(retries=5, delay=2):
 def log(msg, silent=False, **kwargs):
     if not silent:
         print(msg, **kwargs)
-
 
 def get_search_engines():
     return {
