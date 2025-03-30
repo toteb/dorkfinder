@@ -231,13 +231,13 @@ try:
             for engine_key in ENABLED_ENGINES:
                 log(f"[+] Searching Q{query_index}: {query} [Engine: {engine_key}]", silent=args.silent)
 
-                if progress[cli].get(normalized_query) == engine_key:
+                if normalized_query in progress[cli] and progress[cli][normalized_query]['engine'] == engine_key:
                     if args.debug:
-                        logging.debug(f"Skipping already completed query: {query} [{engine_key}]")
+                        logging.debug(f"Skipping already completed query: {normalized_query} [{engine_key}]")
                     continue
 
-                if progress.get(cli, {}).get(normalized_query, '') == engine_key:
-                    continue  # already done
+                if cli in progress and normalized_query in progress[cli] and progress[cli][normalized_query]['engine'] == engine_key:
+                    continue
 
                 url = SEARCH_ENGINES[engine_key] + query.replace(' ', '+')
                 browser.get(url)
@@ -313,7 +313,7 @@ try:
                 for remaining in range(args.sleep, 0, -1):
                     sys.stdout.write(f'\r   -> Sleeping {remaining}')
                     sys.stdout.flush()
-                    time.sleep(1)
+                    time.sleep(0.5)
                 log('\r   -> Done sleeping.', silent=args.silent)
 
     ensure_sudo_alive()
