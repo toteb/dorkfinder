@@ -5,4 +5,5 @@ undetected-chromedriver
 beautifulsoup4
 setuptools
 requests
+json_log_formatter
 pywinauto; platform_system == "Windows"
