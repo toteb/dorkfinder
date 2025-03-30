@@ -313,7 +313,7 @@ try:
                 for remaining in range(args.sleep, 0, -1):
                     sys.stdout.write(f'\r   -> Sleeping {remaining}')
                     sys.stdout.flush()
-                    time.sleep(0.5)
+                    time.sleep(1)
                 log('\r   -> Done sleeping.', silent=args.silent)
 
     ensure_sudo_alive()
