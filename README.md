@@ -1,6 +1,6 @@
 # 🕵️‍♂️ DorkFinder — Simple Dorking Automation Tool
 
-**DorkFinder** is a cross-platform, headless-capable Python tool for automating Google dork-style searches across multiple engines. It's designed for red teamers, pentesters, and OSINT practitioners who need to search public files, assets, or misconfigured buckets quickly and quietly.
+**DorkFinder** is a cross-platform, headless-capable Python tool for automating Google dork-style searches across multiple engines. It's designed for red teamers, pentesters, and OSINT practitioners who need to search public files, assets, or misconfigured buckets quickly and quietly. Feel free to contibute by sending pull requests or issues.
 
 Built by @mcn1k
 
