@@ -84,9 +84,9 @@ if args.resume:
             progress = json.load(f)
         if not args.target:
             args.target = list(progress.keys())[0]
-            completed_engines = list(progress.get(args.target, {}).values())
-            if completed_engines:
-                args.engine = completed_engines[0]
+            completed_queries = list(progress.get(args.target, {}).values())
+            if completed_queries and isinstance(completed_queries[0], dict):
+                args.engine = completed_queries[0].get("engine", args.engine)
             print(f"[INFO] Resuming previous target from progress: {args.target}")
             if args.notor:
                 args.tor = False
@@ -204,7 +204,8 @@ if args.output or args.silent:
     output_file = open(f'dorkfinder_results_{safe}_{ts}.txt', 'w', encoding='utf-8')
 
 try:
-    parser.print_banner()
+    if not args.resume:
+        parser.print_banner()
     log("\n[*] Starting simple dork search...", silent=args.silent)
     if args.debug:
         log(f"[DEBUG] Engine: {', '.join(ENABLED_ENGINES).capitalize()}", silent=args.silent)
