@@ -216,9 +216,6 @@ if args.output or args.silent:
             for line in f:
                 if line.startswith("### ENGINE :"):
                     last_logged_engine = line.strip().split(":")[1].strip()
-    if output_file and args.engine != last_logged_engine:
-        output_file.write(f"\n### ENGINE : {args.engine.upper()}\n")
-        output_file.flush()
 
 try:
     if not args.resume:
@@ -227,10 +224,12 @@ try:
     if args.debug:
         log(f"[DEBUG] Engine: {', '.join(ENABLED_ENGINES).capitalize()}", silent=args.silent)
         logging.debug(f"Engine: {', '.join(ENABLED_ENGINES)}")
-        log(f"[DEBUG] Headless mode: {'enabled' if headless_mode else 'disabled'}", silent=args.silent)
-
     CAPTCHA_COUNT = 0
     SKIP = ["google.com", "support.google.com", "bing.com", "microsoft.com", "duckduckgo.com", "duck.ai", "apple.com"]
+
+    if output_file and args.engine != last_logged_engine:
+        output_file.write(f"\n### ENGINE : {args.engine.upper()}\n")
+        output_file.flush()
 
     for cli in targets:
         log(f"[+] Target: {cli}", silent=args.silent)
