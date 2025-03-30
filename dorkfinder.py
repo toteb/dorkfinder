@@ -232,7 +232,7 @@ try:
                         continue
                     else:
                         log("[!] Waiting 30 mins before retry...", silent=args.silent)
-                        time.sleep(3000)
+                        time.sleep(1800)
                         continue
 
                 found = False
