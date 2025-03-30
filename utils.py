@@ -341,8 +341,8 @@ def find_chrome_binary():
             return path
     return None
 
-    # Cleanup 
-    def cleanup():
+# Cleanup 
+def cleanup():
     try:
         ensure_sudo_alive()
         if browser:
