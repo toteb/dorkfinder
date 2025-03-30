@@ -314,7 +314,7 @@ try:
                     sys.stdout.write(f'\r   -> Sleeping {remaining}')
                     sys.stdout.flush()
                     time.sleep(1)
-                #log('\r   -> Done sleeping.', silent=args.silent)
+                log('\r   -> Done sleeping.', silent=args.silent)
 
     ensure_sudo_alive()
     browser.quit()
