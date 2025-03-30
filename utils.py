@@ -6,9 +6,11 @@ import subprocess
 import shutil
 import requests
 import threading
+import urllib.request
 
 shutdown_flag = False
 
+# Ensure sudo for darwin/linux
 def ensure_sudo_alive():
     """
     On Linux/macOS, request sudo access once and keep it alive.
@@ -41,14 +43,33 @@ def ensure_sudo_alive():
 # Track Tor process if needed (Windows/manual)
 tor_process = None
 
-# check if tor is installed.
+# find TOR executable on windows
+def find_tor_executable():
+    # Common install paths
+    candidates = [
+        os.path.join(os.path.expanduser("~"), "Desktop", "Tor Browser", "Browser", "TorBrowser", "Tor.exe"),
+        r"C:\Tor Browser\Browser\TorBrowser\Tor.exe",
+        r"C:\Program Files\Tor Browser\Browser\TorBrowser\Tor.exe",
+        r"C:\Program Files (x86)\Tor Browser\Browser\TorBrowser\Tor.exe"
+    ]
+
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+
+    return None
+
+# Check if Tor is installed
+tor_path = find_tor_executable()  # <-- call it here
 def is_tor_installed():
-    if platform.system() == 'Windows':
-        return shutil.which("tor") is not None
-    else:
-        return shutil.which("tor") is not None or os.path.exists("/usr/bin/tor")
+    paths = [
+        "/usr/bin/tor",
+        "/opt/homebrew/bin/tor",
+        tor_path
+    ]
+    return shutil.which("tor") is not None or any(os.path.exists(p) for p in paths if p)
 
-
+# Rotate TOR 
 def rotate_tor_ip():
     import socket
     import socks
@@ -57,17 +78,85 @@ def rotate_tor_ip():
     try:
         with socket.create_connection(("127.0.0.1", 9051)) as s:
             s.send(b'AUTHENTICATE\r\n')
+            time.sleep(3)
             s.send(b'SIGNAL NEWNYM\r\n')
+            time.sleep(5)
             s.send(b'QUIT\r\n')
     except Exception as e:
         print(f"[!] Failed to rotate Tor IP: {e}")
 
-
 # Start tor
 def start_tor():
+    import signal
     if not is_tor_installed():
-        print("[!] Tor is not installed. Please install Tor before using this feature.")
-        return False
+        print("[!] Tor is not installed on this system.")
+        answer = None
+        def ask_input():
+            nonlocal answer
+            try:
+                answer = input().strip().lower()
+            except Exception:
+                answer = None
+
+        print("[?] Would you like to install Tor now? (yes/no): ", end='', flush=True)
+
+        if platform.system() in ['Linux', 'Darwin']:
+            import signal
+
+            def timeout_handler(signum, frame):
+                raise TimeoutError
+
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(60)
+
+            try:
+                answer = input().strip().lower()
+            finally:
+                signal.alarm(0)
+
+        else:
+            # Windows alternative using threading
+            timer = threading.Timer(60, lambda: sys.stdin.close())
+            try:
+                timer.start()
+                ask_input()
+            except Exception:
+                print("\n[!] Timed out waiting for user input.")
+                return False
+            finally:
+                timer.cancel()
+
+        if answer in ['y', 'yes']:
+            if platform.system() == 'Linux':
+                subprocess.run(["sudo", "apt-get", "update", "-y"])
+                subprocess.run(["sudo", "apt-get", "install", "-y", "tor"])
+            elif platform.system() == 'Darwin':
+                subprocess.run(["brew", "install", "tor"])
+            else:
+                print("[*] Attempting Tor installation on Windows...")
+                tor_url = "https://www.torproject.org/dist/torbrowser/14.0.8/tor-browser-windows-x86_64-portable-14.0.8.exe"
+                installer_path = os.path.join(os.getenv("TEMP", "."), "tor_install.exe")
+
+                try:
+                    import urllib.request
+                    print(f"[INFO] Downloading Tor from: {tor_url}")
+                    urllib.request.urlretrieve(tor_url, installer_path)
+                    print("[INFO] Running installer...")
+                    subprocess.run([installer_path], check=True)
+                    print("[INFO] Once Tor is installed, open a terminal and run:")
+                    print("       tor.exe --service install")
+                    print("Then restart the script.")
+                    return False
+                except Exception as e:
+                    print(f"[!] Failed to download or run installer: {e}")
+                    return False
+
+        elif answer in ['n', 'no']:
+            print("[!] Tor installation declined by user.")
+            return False
+        else:
+            print("[!] Invalid input. Expected 'yes' or 'no'.")
+            return False
 
     try:
         if platform.system() == 'Windows':
@@ -81,13 +170,24 @@ def start_tor():
                 print("[!] Could not locate tor.exe")
                 return False
         else:
-            # Check if Tor is already active
-            result = subprocess.run(["systemctl", "is-active", "--quiet", "tor"])
-            if result.returncode == 0:
-                print("[INFO] Tor is already running.")
+            if platform.system() == 'Darwin':
+                # Use brew path to run Tor manually in background
+                tor_path = "/opt/homebrew/opt/tor/bin/tor"
+                if os.path.exists(tor_path):
+                    subprocess.Popen([tor_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    print("[INFO] Tor started manually on macOS.")
+                    return True
+                else:
+                    print("[!] Tor binary not found at expected Homebrew location.")
+                    return False
             else:
-                subprocess.run(["sudo", "systemctl", "start", "tor"], check=True)
-                print("[INFO] Tor service started.")
+                # Check if Tor is already active
+                result = subprocess.run(["systemctl", "is-active", "--quiet", "tor"])
+                if result.returncode == 0:
+                    print("[INFO] Tor is already running.")
+                else:
+                    subprocess.run(["sudo", "systemctl", "start", "tor"], check=True)
+                    print("[INFO] Tor service started.")
             return True
     except Exception as e:
         print(f"[!] Failed to start Tor: {e}")
@@ -95,6 +195,10 @@ def start_tor():
 
 # stop tor
 def stop_tor():
+    from dorkfinder import args
+    if not getattr(args, 'tor', False):
+        return
+
     try:
         if platform.system() == 'Windows':
             global tor_process
@@ -103,14 +207,28 @@ def stop_tor():
                 tor_process.wait()
                 print("[INFO] Tor process terminated.")
         else:
-            # Refresh sudo session to avoid password prompt
-            subprocess.run("sudo -v", shell=True, check=True)
-            subprocess.run(["sudo", "systemctl", "stop", "tor"], check=True)
-            print("[INFO] Tor service stopped.")
+            if platform.system() == 'Darwin':
+                try:
+                    subprocess.run(["sudo", "-v"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    brew_services_path = "/opt/homebrew/bin/brew"
+                    if os.path.exists(brew_services_path):
+                        subprocess.run(["sudo", brew_services_path, "services", "stop", "tor"], check=True)
+                        print("[INFO] Tor service stopped using Homebrew.")
+                    else:
+                        print("[!] Could not find Homebrew service manager to stop Tor.")
+                except Exception as e:
+                    print(f"[!] Failed to stop Tor with Homebrew: {e}")
+            else:
+                try:
+                    subprocess.run(["sudo", "-n", "true"], check=True)
+                    subprocess.run(["sudo", "-n", "systemctl", "stop", "tor"], check=True)
+                    print("[INFO] Tor service stopped.")
+                except Exception as e:
+                    print(f"[!] Failed to stop Tor: {e}")
     except Exception as e:
         print(f"[!] Failed to stop Tor: {e}")
 
-
+# Get current TOR IP
 def get_current_tor_ip(retries=5, delay=2):
     """
     Attempts to fetch the current Tor IP with retry logic.
@@ -139,7 +257,6 @@ def log(msg, silent=False, **kwargs):
     if not silent:
         print(msg, **kwargs)
 
-
 def get_search_engines():
     return {
         'brave': "https://search.brave.com/search?q=",
@@ -154,7 +271,7 @@ def minimize_chrome_window(timeout=10):
         return
 
     try:
-        print("[INFO] Waiting for Chrome window to appear...")
+        print("[DEBUG] Waiting for Chrome window to appear...")
         from pywinauto import Desktop
         for _ in range(timeout * 2):
             try:
@@ -163,7 +280,7 @@ def minimize_chrome_window(timeout=10):
                 for win in windows:
                     if "chrome" in win.window_text().lower():
                         win.minimize()
-                        print("[INFO] Chrome window minimized.")
+                        #print("[DEBUG] Chrome window minimized.")
                         return
             except Exception:
                 pass
@@ -188,7 +305,7 @@ def minimize_chrome_macos():
         end tell
         '''
         subprocess.run(["osascript", "-e", script])
-        print("[INFO] Chrome minimize keystroke sent (macOS).")
+        #print("[DEBUG] Chrome minimize keystroke sent (macOS).")
 
     except Exception as e:
         print(f"[!] Failed to minimize Chrome on macOS: {e}")
@@ -200,7 +317,7 @@ def minimize_chrome_linux():
 
     try:
         subprocess.run(["wmctrl", "-r", "Google Chrome", "-b", "add,hidden"])
-        print("[INFO] Chrome window minimized (Linux).")
+        #print("[INFO] Chrome window minimized (Linux).")
 
     except Exception as e:
         print(f"[!] Failed to minimize Chrome on Linux: {e}")
