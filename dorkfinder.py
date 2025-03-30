@@ -253,9 +253,9 @@ try:
                     status_msg = "Skipped"
                 else:
                     if args.debug:
-                        status_msg = f"Searching Q{query_index}:"
+                        status_msg = f"Searching Q{query_index}"
                     else:
-                        status_msg = f"Searching:"
+                        status_msg = f"Searching"
                 log(f"[+] {status_msg}: {query} [Engine: {engine_key}]", silent=args.silent)
 
                 if normalized_query in progress[cli] and progress[cli][normalized_query]['engine'] == engine_key:
