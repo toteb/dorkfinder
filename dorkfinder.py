@@ -114,13 +114,7 @@ with open(queries_path, 'r', encoding='utf-8') as f:
 # === Browser Setup ===
 options = uc.ChromeOptions()
 
-use_real_profile = ()
-if args.engine == 'google':
-    use_real_profile = True
-else:
-    use_real_profile = False
-
-# On Linux, avoid using real profile when running headless with non-Google engines
+use_real_profile = args.engine == 'google'
 headless_mode = args.engine != 'google'
 
 #profiles and executables  
@@ -137,9 +131,15 @@ else:
 # use real profile specs
 if use_real_profile:
     options.add_argument(f"--user-data-dir={profile}")
+
 if platform.system() == 'Windows':
     options.add_argument("--no-first-run")
     options.add_argument("--no-default-browser-check")
+
+if platform.system() == 'Linux' and use_real_profile:
+    options.add_argument("--user-data-dir=/tmp/chrome-profile-dorkfinder")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
 if args.tor:
     if not start_tor():
@@ -153,8 +153,11 @@ if args.tor:
 
 try:
     browser = uc.Chrome(options=options, version_main=134, headless=headless_mode)
+    time.sleep(1)
 except Exception as e:
     log(f"[!] Failed to start browser: {e}", silent=args.silent)
+    log(f"[DEBUG] Binary path: {options.binary_location}", silent=args.silent)
+    log(f"[DEBUG] Headless: {headless_mode} | Real profile: {use_real_profile}", silent=args.silent)
     stop_tor()
     sys.exit(1)
 
@@ -224,11 +227,8 @@ try:
                         stop_tor()
                         sys.exit(1)
                     if args.tor:
-                        log("[*] Rotating Tor IP...")
-                        rotate_tor_ip()
-                        time.sleep(5)  # brief wait for Tor to stabilize
                         tor_ip = get_current_tor_ip()
-                        log(f"[INFO] New Tor IP: {tor_ip}")
+                        log(f"[*] Rotating Tor IP: {tor_ip}")
                         continue
                     else:
                         log("[!] Waiting 5 mins before retry...", silent=args.silent)

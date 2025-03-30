@@ -77,7 +77,9 @@ def rotate_tor_ip():
     try:
         with socket.create_connection(("127.0.0.1", 9051)) as s:
             s.send(b'AUTHENTICATE\r\n')
+            time.sleep(3)
             s.send(b'SIGNAL NEWNYM\r\n')
+            time.sleep(5)
             s.send(b'QUIT\r\n')
     except Exception as e:
         print(f"[!] Failed to rotate Tor IP: {e}")
