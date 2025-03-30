@@ -236,7 +236,7 @@ try:
         log(f"[DEBUG] Engine: {', '.join(ENABLED_ENGINES).capitalize()}", silent=args.silent)
         logging.debug(f"Engine: {', '.join(ENABLED_ENGINES)}")
     CAPTCHA_COUNT = 0
-    SKIP = [".google.", "bing.com", "microsoft.com", "duckduckgo.com", "duck.ai", "apple.com", "google.", "googleapis.com", "windows.net"]
+    SKIP = [".google.", "bing.com", "microsoft.com", "duckduckgo.com", "duck.ai", "apple.com", "google.", "googleapis.com", "windows.net", "live.com", "wikipedia.org"]
 
     if output_file and args.engine != last_logged_engine:
         output_file.write(f"\n### ENGINE : {args.engine.upper()}\n")
