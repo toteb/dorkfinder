@@ -245,7 +245,7 @@ try:
 
                 if args.debug:
                     log("[DEBUG] Page snippet:", silent=args.silent)
-                    print(source[:500])
+                    print(source[:2000])
 
                 if engine_key == 'google' and ('captcha' in source.lower() or 'unusual traffic' in source.lower()):
                     CAPTCHA_COUNT += 1
