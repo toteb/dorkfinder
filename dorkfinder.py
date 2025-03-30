@@ -229,7 +229,12 @@ try:
                 logging.debug(f"Executing query: {normalized_query} for target: {cli}")
 
             for engine_key in ENABLED_ENGINES:
-                log(f"[+] Searching Q{query_index}: {query} [Engine: {engine_key}]", silent=args.silent)
+                is_already_done = (
+                    normalized_query in progress[cli]
+                    and progress[cli][normalized_query]['engine'] == engine_key
+                )
+                status_msg = "Skipped" if is_already_done else f"Searching Q{query_index}"
+                log(f"[+] {status_msg}: {query} [Engine: {engine_key}]", silent=args.silent)
 
                 if normalized_query in progress[cli] and progress[cli][normalized_query]['engine'] == engine_key:
                     if args.debug:
