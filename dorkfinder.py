@@ -223,19 +223,20 @@ try:
             progress[cli] = {}
 
         for query in QUERIES:
+            normalized_query = query.strip()
             query_index = QUERIES.index(query) + 1
             if args.debug:
-                logging.debug(f"Executing query: {query} for target: {cli}")
+                logging.debug(f"Executing query: {normalized_query} for target: {cli}")
 
             for engine_key in ENABLED_ENGINES:
                 log(f"[+] Searching Q{query_index}: {query} [Engine: {engine_key}]", silent=args.silent)
 
-                if progress[cli].get(query) == engine_key:
+                if progress[cli].get(normalized_query) == engine_key:
                     if args.debug:
                         logging.debug(f"Skipping already completed query: {query} [{engine_key}]")
                     continue
 
-                if progress.get(cli, {}).get(query, '') == engine_key:
+                if progress.get(cli, {}).get(normalized_query, '') == engine_key:
                     continue  # already done
 
                 url = SEARCH_ENGINES[engine_key] + query.replace(' ', '+')
@@ -302,7 +303,7 @@ try:
 
                 if cli not in progress:
                     progress[cli] = {}
-                progress[cli][query] = {
+                progress[cli][normalized_query] = {
                     "engine": engine_key,
                     "query_number": query_index,
                     "added": datetime.now().isoformat()
@@ -310,10 +311,10 @@ try:
                 save_progress()
                 
                 for remaining in range(args.sleep, 0, -1):
-                    sys.stdout.write(f'\r   -> Sleeping... {remaining}s')
+                    sys.stdout.write(f'\r   -> Sleeping... {remaining}')
                     sys.stdout.flush()
                     time.sleep(1)
-                log('\r   -> Done sleeping.', silent=args.silent)
+                #log('\r   -> Done sleeping.', silent=args.silent)
 
     ensure_sudo_alive()
     browser.quit()
