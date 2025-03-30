@@ -90,7 +90,10 @@ if args.resume:
             if args.debug:
                 logging.debug(f"Resuming with saved sleep time: {args.sleep}")
             if completed_queries and isinstance(completed_queries[0], dict):
-                args.engine = completed_queries[0].get("engine", args.engine)
+                if not any(arg.startswith('-e') or arg.startswith('--engine') for arg in sys.argv):
+                    args.engine = completed_queries[0].get("engine", args.engine)
+                    if args.debug:
+                        logging.debug(f"Resuming with saved engine: {args.engine}")
             print(f"[INFO] Resuming previous target from progress: {args.target}")
             if args.notor:
                 args.tor = False
