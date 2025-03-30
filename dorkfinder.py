@@ -68,12 +68,20 @@ parser.add_argument('--notor', action='store_true', help='Disables Tor routing f
 args = parser.parse_args()
 
 if args.debug:
-    logging.basicConfig(
-        filename="debug.log",
-        level=logging.DEBUG,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-        filemode="w"
-    )
+    import json_log_formatter
+    class CustomJSONFormatter(json_log_formatter.JSONFormatter):
+        def json_record(self, message, extra, record):
+            extra['level'] = record.levelname
+            extra['timestamp'] = self.formatTime(record, self.datefmt)
+            extra['message'] = message
+            return extra
+
+    formatter = CustomJSONFormatter()
+    json_handler = logging.FileHandler("debug.json")
+    json_handler.setFormatter(formatter)
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.addHandler(json_handler)
     logging.debug("Debug mode enabled. Logging started.")
 
 # Enforce -t only if --resume is not used
