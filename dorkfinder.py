@@ -385,6 +385,10 @@ try:
 
     log("\n[+] Finished all queries.", silent=args.silent)
     COMPLETED_SUCCESSFULLY = True
+    if os.path.exists(PROGRESS_FILE):
+        os.remove(PROGRESS_FILE)
+        if args.debug:
+            logging.debug(f"Deleted {PROGRESS_FILE} after successful completion.")
     sys.exit(0)
 
 except KeyboardInterrupt:
@@ -402,6 +406,10 @@ except KeyboardInterrupt:
 
 except Exception as e:
     if COMPLETED_SUCCESSFULLY:
+        if os.path.exists(PROGRESS_FILE):
+            os.remove(PROGRESS_FILE)
+            if args.debug:
+                logging.debug(f"Deleted {PROGRESS_FILE} after successful completion.")
         sys.exit(0)
     log(f"[!] An error occurred: {e}", silent=args.silent)
     if args.debug:
