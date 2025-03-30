@@ -59,7 +59,6 @@ parser.add_argument('--sleep', type=int, default=60, help='Sleep time between re
 parser.add_argument('--tor', action='store_true', help='Enable Tor routing')
 parser.add_argument('--notor', action='store_true', help='Disables Tor routing for --resume')
 
-
 # FIRE HERE
 args = parser.parse_args()
 
