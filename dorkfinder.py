@@ -175,6 +175,17 @@ if args.tor:
         log(f"[!] {tor_ip}", silent=args.silent)
         if args.debug:
             logging.debug(f"Tor IP error: {tor_ip}")
+else:
+    try:
+        import urllib.request
+        ip = urllib.request.urlopen('https://api.ipify.org').read().decode()
+        log(f"[INFO] Public IP: {ip}", silent=args.silent)
+        if args.debug:
+            logging.debug(f"Public IP: {ip}")
+    except Exception as e:
+        log(f"[!] Failed to retrieve public IP: {e}", silent=args.silent)
+        if args.debug:
+            logging.debug(f"Failed to retrieve public IP: {e}")
 
 failed_queries = []
 retry_tracker = {}
