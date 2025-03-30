@@ -342,15 +342,15 @@ def find_chrome_binary():
     return None
 
 # Cleanup 
-def cleanup():
+def cleanup(browser=None, output_file=None, args=None):
     try:
         ensure_sudo_alive()
         if browser:
             browser.quit()
-        if args.tor:
+        if args and getattr(args, "tor", False):
             stop_tor()
         if output_file:
             output_file.close()
     except Exception as e:
-        if args.debug:
+        if args and getattr(args, "debug", False):
             logging.debug(f"Cleanup exception: {e}")
