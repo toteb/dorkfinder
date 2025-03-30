@@ -127,11 +127,7 @@ def save_progress():
 # === SEARCH ENGINES ===
 SEARCH_ENGINES = get_search_engines()
 ENABLED_ENGINES = [args.engine]
-<<<<<<< HEAD
-targets = [t.strip() for t in args.target.split(',')] if args.target else [] 
-=======
 targets = list(set(t.strip() for t in args.target.split(','))) if args.target else [] 
->>>>>>> testing
 
 # === Load Queries ===
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -371,17 +367,12 @@ try:
 
     if args.debug:
         logging.debug("All queries processed. Preparing to exit.")
-<<<<<<< HEAD
-
-    log("\n[+] Finished all queries.", silent=args.silent)
-=======
     log(f"\n[+] Summary: {len(progress.get(args.target, {}))} queries recorded for target '{args.target}'", silent=args.silent)
     if args.debug:
         logging.debug(f"Summary: {len(progress.get(args.target, {}))} queries recorded for target '{args.target}'")
 
     log("\n[+] Finished all queries.", silent=args.silent)
     COMPLETED_SUCCESSFULLY = True
->>>>>>> testing
     sys.exit(0)
 
 except KeyboardInterrupt:
@@ -404,11 +395,8 @@ except KeyboardInterrupt:
             logging.debug(f"Exception occurred: {str(e)}")
 
 except Exception as e:
-<<<<<<< HEAD
-=======
     if COMPLETED_SUCCESSFULLY:
         sys.exit(0)
->>>>>>> testing
     log(f"[!] An error occurred: {e}", silent=args.silent)
     if args.debug:
         logging.debug(f"Exception occurred: {str(e)}")
