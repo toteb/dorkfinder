@@ -334,6 +334,7 @@ except KeyboardInterrupt:
     try:
         if browser:
             browser.quit()
+            os._exit(0)
     except Exception as e:
         log(f"[!] Failed to quit browser: {e}", silent=args.silent)
         if args.debug:
@@ -341,7 +342,6 @@ except KeyboardInterrupt:
 
     try:
         stop_tor()
-        os._exit(0)
     except Exception as e:
         log(f"[!] Failed to stop Tor: {e}", silent=args.silent)
         if args.debug:
