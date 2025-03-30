@@ -363,9 +363,9 @@ try:
     if failed_queries:
         with open("failed_queries.json", "w", encoding="utf-8") as fq:
             json.dump(failed_queries, fq, indent=2)
-            
+
     if args.debug:
-    logging.debug("All queries processed. Preparing to exit.")
+        logging.debug("All queries processed. Preparing to exit.")
 
     log("\n[+] Finished all queries.", silent=args.silent)
     sys.exit(0)
