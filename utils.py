@@ -271,7 +271,7 @@ def minimize_chrome_window(timeout=10):
         return
 
     try:
-        print("[INFO] Waiting for Chrome window to appear...")
+        print("[DEBUG] Waiting for Chrome window to appear...")
         from pywinauto import Desktop
         for _ in range(timeout * 2):
             try:
@@ -280,7 +280,7 @@ def minimize_chrome_window(timeout=10):
                 for win in windows:
                     if "chrome" in win.window_text().lower():
                         win.minimize()
-                        print("[INFO] Chrome window minimized.")
+                        #print("[DEBUG] Chrome window minimized.")
                         return
             except Exception:
                 pass
@@ -305,7 +305,7 @@ def minimize_chrome_macos():
         end tell
         '''
         subprocess.run(["osascript", "-e", script])
-        print("[INFO] Chrome minimize keystroke sent (macOS).")
+        #print("[DEBUG] Chrome minimize keystroke sent (macOS).")
 
     except Exception as e:
         print(f"[!] Failed to minimize Chrome on macOS: {e}")
@@ -317,7 +317,7 @@ def minimize_chrome_linux():
 
     try:
         subprocess.run(["wmctrl", "-r", "Google Chrome", "-b", "add,hidden"])
-        print("[INFO] Chrome window minimized (Linux).")
+        #print("[INFO] Chrome window minimized (Linux).")
 
     except Exception as e:
         print(f"[!] Failed to minimize Chrome on Linux: {e}")
