@@ -99,7 +99,7 @@ def save_progress():
     with open(PROGRESS_FILE, 'w') as f:
         json.dump(progress, f, indent=2)
 
-# SEARCH ENGINES
+ # === SEARCH ENGINES ===
 SEARCH_ENGINES = get_search_engines()
 # Use selected engine
 ENABLED_ENGINES = [args.engine]
@@ -117,7 +117,7 @@ options = uc.ChromeOptions()
 use_real_profile = args.engine == 'google'
 headless_mode = args.engine != 'google'
 
-#profiles and executables  
+# === profiles and executables ===
 if platform.system() == 'Darwin':
     profile = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default")
     options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
@@ -128,7 +128,7 @@ else:
     profile = os.path.join(os.environ['LOCALAPPDATA'], "Google\\Chrome\\User Data")
     options.binary_location = find_chrome_binary()
 
-# use real profile specs
+# ===use real profile specs ===
 if use_real_profile:
     options.add_argument(f"--user-data-dir={profile}")
 
@@ -231,8 +231,8 @@ try:
                         log(f"[*] Rotating Tor IP: {tor_ip}")
                         continue
                     else:
-                        log("[!] Waiting 5 mins before retry...", silent=args.silent)
-                        time.sleep(300)
+                        log("[!] Waiting 30 mins before retry...", silent=args.silent)
+                        time.sleep(3000)
                         continue
 
                 found = False
