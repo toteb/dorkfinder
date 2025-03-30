@@ -85,10 +85,10 @@ if args.resume:
         if not args.target:
             args.target = list(progress.keys())[0]
             completed_queries = list(progress.get(args.target, {}).values())
-                if 'sleep_time' in progress and not any(arg.startswith('--sleep') for arg in sys.argv):
-                args.sleep = progress['sleep_time']
-                if args.debug:
-                    logging.debug(f"Resuming with saved sleep time: {args.sleep}")
+            if 'sleep_time' in progress and not any(arg.startswith('--sleep') for arg in sys.argv):
+            args.sleep = progress['sleep_time']
+            if args.debug:
+                logging.debug(f"Resuming with saved sleep time: {args.sleep}")
             if completed_queries and isinstance(completed_queries[0], dict):
                 args.engine = completed_queries[0].get("engine", args.engine)
             print(f"[INFO] Resuming previous target from progress: {args.target}")
