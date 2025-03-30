@@ -339,21 +339,20 @@ except KeyboardInterrupt:
         log(f"[!] Failed to quit browser: {e}", silent=args.silent)
         if args.debug:
             logging.debug(f"Exception occurred: {str(e)}")
+    # try:
+    #     stop_tor()
+    # except Exception as e:
+    #     log(f"[!] Failed to stop Tor: {e}", silent=args.silent)
+    #     if args.debug:
+    #         logging.debug(f"Exception occurred: {str(e)}")
 
-    try:
-        stop_tor()
-    except Exception as e:
-        log(f"[!] Failed to stop Tor: {e}", silent=args.silent)
-        if args.debug:
-            logging.debug(f"Exception occurred: {str(e)}")
-
-    try:
-        if output_file:
-            output_file.close()
-    except Exception as e:
-        log(f"[!] Failed to close output file: {e}", silent=args.silent)
-        if args.debug:
-            logging.debug(f"Exception occurred: {str(e)}")
+    # try:
+    #     if output_file:
+    #         output_file.close()
+    # except Exception as e:
+    #     log(f"[!] Failed to close output file: {e}", silent=args.silent)
+    #     if args.debug:
+    #         logging.debug(f"Exception occurred: {str(e)}")
 
 except Exception as e:
     log(f"[!] An error occurred: {e}", silent=args.silent)
