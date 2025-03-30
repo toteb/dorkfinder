@@ -228,7 +228,7 @@ def stop_tor():
     except Exception as e:
         print(f"[!] Failed to stop Tor: {e}")
 
-
+# Get current TOR IP
 def get_current_tor_ip(retries=5, delay=2):
     """
     Attempts to fetch the current Tor IP with retry logic.
