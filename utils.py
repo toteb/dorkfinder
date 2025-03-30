@@ -261,7 +261,7 @@ def get_search_engines():
     return {
         'brave': "https://search.brave.com/search?q=",
         'bing': "https://www.bing.com/search?q=",
-        'ddg': "https://duckduckgo.com/?q=",
+        'ddg': "https://duckduckgo.com/?t=h_&ia=web&q=",
         'google': "https://www.google.com/search?q=",
     }
 
