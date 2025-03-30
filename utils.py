@@ -340,3 +340,17 @@ def find_chrome_binary():
         if os.path.exists(path):
             return path
     return None
+
+    # Cleanup 
+    def cleanup():
+    try:
+        ensure_sudo_alive()
+        if browser:
+            browser.quit()
+        if args.tor:
+            stop_tor()
+        if output_file:
+            output_file.close()
+    except Exception as e:
+        if args.debug:
+            logging.debug(f"Cleanup exception: {e}")

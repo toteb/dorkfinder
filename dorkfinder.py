@@ -13,7 +13,11 @@ from datetime import datetime
 import undetected_chromedriver as uc
 uc.Chrome.__del__ = lambda self: None
 import json
-from utils import minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines, find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip, ensure_sudo_alive
+from utils import (
+    minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines,
+    find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip, ensure_sudo_alive,
+    cleanup
+)
 COMPLETED_SUCCESSFULLY = False
 
 # Request sudo only once
@@ -192,6 +196,8 @@ failed_queries = []
 retry_tracker = {}
 
 try:
+    import atexit
+    atexit.register(cleanup)
     browser = uc.Chrome(options=options, version_main=134, headless=headless_mode)
     if args.debug:
         logging.debug(f"Browser started with headless={headless_mode}, profile={use_real_profile}")
@@ -356,10 +362,8 @@ try:
                 log('-> Back to work.', silent=args.silent)
 
     ensure_sudo_alive()
-    browser.quit()
-    stop_tor()
-    if output_file:
-        output_file.close()
+
+    cleanup() 
     
     if failed_queries:
         with open("failed_queries.json", "w", encoding="utf-8") as fq:
@@ -385,14 +389,8 @@ except KeyboardInterrupt:
         log(f"[!] Failed to save progress: {e}", silent=args.silent)
         if args.debug:
             logging.debug(f"Exception occurred: {str(e)}")
-    try:
-        if browser:
-            browser.quit()
-            os._exit(0)
-    except Exception as e:
-        log(f"[!] Failed to quit browser: {e}", silent=args.silent)
-        if args.debug:
-            logging.debug(f"Exception occurred: {str(e)}")
+    cleanup()
+    os._exit(2)
 
 except Exception as e:
     if COMPLETED_SUCCESSFULLY:
@@ -406,18 +404,5 @@ except Exception as e:
         log(f"[!] Failed to save progress: {se}", silent=args.silent)
         if args.debug:
             logging.debug(f"Exception occurred: {str(se)}")
-    try:
-        if browser:
-            browser.quit()
-    except Exception:
-        pass
-    try:
-        stop_tor()
-    except Exception:
-        pass
-    try:
-        if output_file:
-            output_file.close()
-    except Exception:
-        pass
+    cleanup()
     os._exit(1)
