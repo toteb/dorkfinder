@@ -18,13 +18,11 @@ from utils import (
     find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip, ensure_sudo_alive,
     cleanup, kill_existing_uc_chrome
 )
+
 COMPLETED_SUCCESSFULLY = False
-
-# Request sudo only once
 ensure_sudo_alive()
-
 CAPTCHA_THRESHOLD = 5
-PROGRESS_FILE = 'progress.json'
+PROGRESS_FILE = 'resume.json'
 
 # === CLI ARGUMENTS ===
 class SilentArgumentParser(argparse.ArgumentParser):
@@ -156,23 +154,28 @@ use_real_profile = args.engine == 'google'
 headless_mode = args.engine != 'google'
 
 if platform.system() == 'Darwin':
-    profile = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default")
+    #profile = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default")
     options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 elif platform.system() == 'Linux':
-    profile = os.path.expanduser("~/.config/google-chrome/Default")
+    #profile = os.path.expanduser("~/.config/google-chrome/Default")
     options.binary_location = "/usr/bin/google-chrome"
 else:
-    profile = os.path.join(os.environ['LOCALAPPDATA'], "Google\\Chrome\\User Data")
+    # temp_dir = tempfile.gettempdir()  # e.g., C:\Users\user\AppData\Local\Temp
+    # profile_temp_dir = os.path.join(temp_dir, "chrome-profile-dorkfinder")
+    # os.makedirs(profile_temp_dir, exist_ok=True)
+    # profile = profile_temp_dir
     options.binary_location = find_chrome_binary()
 
-if use_real_profile:
-    if platform.system() == 'Windows':
-        profile_dir = r"C:\Temp\chrome-profile-dorkfinder"
-        os.makedirs(profile_dir, exist_ok=True)
-        options.add_argument("--user-data-dir=C:\\Temp\\chrome-profile-dorkfinder")
-    else:
-        options.add_argument(f"--user-data-dir={profile}")
+use_temp_profile = args.engine == 'google'
+if use_temp_profile:
+    temp_dir = tempfile.gettempdir()
+    profile = os.path.join(temp_dir, "chrome-profile-dorkfinder")
+    os.makedirs(profile, exist_ok=True)
+    options.add_argument(f"--user-data-dir={profile}")
 
+# if use_real_profile:
+#    options.add_argument(f"--user-data-dir={profile}")
+        
 if platform.system() == 'Windows':
     options.add_argument("--no-first-run")
     options.add_argument("--no-default-browser-check")
@@ -396,14 +399,13 @@ try:
         os.remove(PROGRESS_FILE)
         if args.debug:
             logging.debug(f"Deleted {PROGRESS_FILE} after successful completion.")
-    if use_real_profile and platform.system() == 'Windows':
+    if use_temp_profile:
         try:
             import shutil
-            profile_dir = r"C:\Temp\chrome-profile-dorkfinder"
-            if os.path.exists(profile_dir):
-                shutil.rmtree(profile_dir)
+            if os.path.exists(profile):
+                shutil.rmtree(profile)
                 if args.debug:
-                    logging.debug(f"Deleted temporary Chrome profile directory: {profile_dir}")
+                    logging.debug(f"Deleted temporary Chrome profile directory: {profile}")
         except Exception as e:
             if args.debug:
                 logging.debug(f"Failed to delete Chrome profile directory: {e}")
