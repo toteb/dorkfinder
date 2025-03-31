@@ -6,6 +6,7 @@ import subprocess
 import shutil
 import requests
 import threading
+import psutil
 import urllib.request
 
 shutdown_flag = False
@@ -354,3 +355,13 @@ def cleanup(browser=None, output_file=None, args=None):
     except Exception as e:
         if args and getattr(args, "debug", False):
             logging.debug(f"Cleanup exception: {e}")
+
+def kill_existing_uc_chrome():
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            if 'chrome' in proc.info['name'].lower() and any('undetected_chromedriver' in cmd for cmd in proc.info['cmdline']):
+                proc.kill()
+                if args.debug:
+                    logging.debug(f"Killed existing undetected_chromedriver Chrome process: PID {proc.pid}")
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue

@@ -16,7 +16,7 @@ import json
 from utils import (
     minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines,
     find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip, ensure_sudo_alive,
-    cleanup
+    cleanup, kill_existing_uc_chrome
 )
 COMPLETED_SUCCESSFULLY = False
 
@@ -146,6 +146,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 queries_path = os.path.join(SCRIPT_DIR, 'queries.txt')
 with open(queries_path, 'r', encoding='utf-8') as f:
     RAW_QUERIES = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+
+kill_existing_uc_chrome()
 
 # === Browser Setup ===
 options = uc.ChromeOptions()
