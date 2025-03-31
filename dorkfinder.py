@@ -23,7 +23,31 @@ from utils import (
 COMPLETED_SUCCESSFULLY = False
 ensure_sudo_alive()
 CAPTCHA_THRESHOLD = 5
-PROGRESS_FILE = 'resume.json'
+
+# === RESUME STUFF ===
+TEMP_DIR = tempfile.gettempdir()
+LAST_TARGET_FILE = os.path.join(TEMP_DIR, "dorkfinder_last_target.json")
+
+def get_progress_file(target=None):
+    safe_target = target.replace(' ', '_').replace('.', '_') if target else "default"
+    return os.path.join(TEMP_DIR, f"resume_{safe_target.lower()}.json")
+
+# Determine the target
+if args.resume and not args.target:
+    if os.path.exists(LAST_TARGET_FILE):
+        with open(LAST_TARGET_FILE, 'r') as f:
+            args.target = json.load(f).get("target")
+        if not args.target:
+            print("[!] Cannot resume: target unknown.")
+            sys.exit(1)
+else:
+    # Save target to pointer file
+    with open(LAST_TARGET_FILE, 'w') as f:
+        json.dump({"target": args.target.split(',')[0]}, f)
+
+PROGRESS_FILE = get_progress_file(args.target)
+# === END RESUME STUFF ===
+
 
 # === CLI ARGUMENTS ===
 class SilentArgumentParser(argparse.ArgumentParser):
@@ -63,7 +87,7 @@ parser.add_argument('--sleep', type=int, default=60, help='Sleep time between re
 parser.add_argument('--tor', action='store_true', help='Enable Tor routing')
 parser.add_argument('--notor', action='store_true', help='Disables Tor routing for --resume')
 
-# FIRE HERE
+# === PARSING STUFF ===
 args = parser.parse_args()
 
 if args.debug:
@@ -83,7 +107,8 @@ if args.debug:
     root_logger.addHandler(json_handler)
     logging.debug("Debug mode enabled. Logging started.")
 
-# Enforce -t only if --resume is not used
+
+# === ENFORCE -t only if -r is not used ===
 if not args.resume and not args.target:
     parser.error("the following arguments are required: -t (unless using --resume)")
 
