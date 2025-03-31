@@ -101,5 +101,12 @@ python3 dorkfinder.py -e --sleep 60
 python3 dorkfinder.py -e --sleep 60 --tor
 
 
+⚠️ Disclaimer
+
+This tool is provided for educational and authorized security testing purposes only.
+The developers assume no liability or responsibility for any misuse, damage, or legal consequences resulting from the use of this software.
+
+Do not deploy this tool against systems you do not own or have explicit permission to test. Unauthorized use is strictly prohibited.
+
 
 
