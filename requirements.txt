@@ -4,6 +4,7 @@ webdriver-manager
 undetected-chromedriver
 beautifulsoup4
 setuptools
+psutil
 requests
 json_log_formatter
 pywinauto; platform_system == "Windows"
