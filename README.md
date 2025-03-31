@@ -1,6 +1,8 @@
 # 🕵️‍♂️ DorkFinder — Simple Dorking Automation Tool
 
-**DorkFinder** is a cross-platform, headless-capable* Python tool for automating Google dork-style searches across multiple engines. It's designed for red teamers, pentesters, and OSINT practitioners who need to search public files, assets, or misconfigured buckets quickly and quietly. Feel free to contibute by sending pull requests or issues.
+**DorkFinder** is a cross-platform, headless-capable* Python tool for automating Google dork-style searches across multiple engines. 
+It's designed for red teamers, pentesters, and OSINT practitioners who need to search public files, assets, or misconfigured buckets quickly and quietly. 
+Feel free to contibute by sending pull requests or issues.
 
 Built by @mcn1k
 
@@ -76,24 +78,24 @@ https://s3.amazonaws.com/somefile...
 🔁 Resume Support
 python3 dorkfinder.py -r
 It will:
-	•	Resume the last target
-	•	Use previously saved sleep time and engine (unless overridden)
-	•	Skip completed queries per-engine
+ • Resume the last target
+ • Use previously saved sleep time and engine (unless overridden)
+ • Skip completed queries per-engine
 
 🌐 Tor Support
 Enable Tor for anonymized searching:
 python3 dorkfinder.py -t target.com --tor
 
 It will:
-	•	Route traffic via Tor SOCKS5 proxy
-	•	Automatically rotate IP on CAPTCHA
-	•	Detect and avoid common anti-bot pages
+ • Route traffic via Tor SOCKS5 proxy
+ • Automatically rotate IP on CAPTCHA
+ • Detect and avoid common anti-bot pages
 
 📦 Dependencies
-	•	Python 3.8+
-	•	undetected_chromedriver
-	•	selenium
-	•	webdriver_manager
+ • Python 3.8+
+ • undetected_chromedriver
+ • selenium
+ • webdriver_manager
 pip install -r requirements.txt
 
 📁 Example
@@ -110,6 +112,3 @@ or legal consequences resulting from the use of this software.
 
 Do not deploy this tool against systems you do not own or have explicit permission to test. 
 Unauthorized use is strictly prohibited.
-
-
-
