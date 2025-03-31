@@ -417,7 +417,7 @@ except KeyboardInterrupt:
         log(f"[!] Failed to save progress: {e}", silent=args.silent)
         if args.debug:
             logging.debug(f"Exception occurred: {str(e)}")
-    cleanup()
+    cleanup(browser=browser, output_file=output_file, args=args)
     os._exit(2)
 
 except Exception as e:
@@ -436,5 +436,5 @@ except Exception as e:
         log(f"[!] Failed to save progress: {se}", silent=args.silent)
         if args.debug:
             logging.debug(f"Exception occurred: {str(se)}")
-    cleanup()
+    cleanup(browser=browser, output_file=output_file, args=args)
     os._exit(1)
