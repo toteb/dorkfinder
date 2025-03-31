@@ -347,9 +347,25 @@ def cleanup(browser=None, output_file=None, args=None):
     try:
         ensure_sudo_alive()
         if browser:
-            browser.quit()
+            try:
+                browser.quit()
+            except Exception as e:
+                if args and getattr(args, "debug", False):
+                    logging.debug(f"browser.quit() failed: {e}")
+
+        # Fallback: Kill any Chrome processes started by uc
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                if 'chrome' in proc.info['name'].lower() and any('undetected_chromedriver' in cmd for cmd in proc.info['cmdline']):
+                    proc.kill()
+                    if args and getattr(args, "debug", False):
+                        logging.debug(f"Force-killed leftover Chrome: PID {proc.pid}")
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                continue
+
         if args and getattr(args, "tor", False):
             stop_tor()
+
         if output_file:
             output_file.close()
     except Exception as e:
