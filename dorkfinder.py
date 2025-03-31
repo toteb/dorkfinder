@@ -164,7 +164,12 @@ else:
     options.binary_location = find_chrome_binary()
 
 if use_real_profile:
-    options.add_argument(f"--user-data-dir={profile}")
+    if platform.system() == 'Windows':
+        profile_dir = r"C:\Temp\chrome-profile-dorkfinder"
+        os.makedirs(profile_dir, exist_ok=True)
+        options.add_argument("--user-data-dir=C:\\Temp\\chrome-profile-dorkfinder")
+    else:
+        options.add_argument(f"--user-data-dir={profile}")
 
 if platform.system() == 'Windows':
     options.add_argument("--no-first-run")
@@ -389,6 +394,17 @@ try:
         os.remove(PROGRESS_FILE)
         if args.debug:
             logging.debug(f"Deleted {PROGRESS_FILE} after successful completion.")
+    if use_real_profile and platform.system() == 'Windows':
+        try:
+            import shutil
+            profile_dir = r"C:\Temp\chrome-profile-dorkfinder"
+            if os.path.exists(profile_dir):
+                shutil.rmtree(profile_dir)
+                if args.debug:
+                    logging.debug(f"Deleted temporary Chrome profile directory: {profile_dir}")
+        except Exception as e:
+            if args.debug:
+                logging.debug(f"Failed to delete Chrome profile directory: {e}")
     sys.exit(0)
 
 except KeyboardInterrupt:
