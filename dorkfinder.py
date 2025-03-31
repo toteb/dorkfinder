@@ -84,7 +84,7 @@ if args.resume and not args.target:
 else:
     # Save target to pointer file
     with open(LAST_TARGET_FILE, 'w') as f:
-    json.dump({"target": args.target.split(',')[0]}, f)
+        json.dump({"target": args.target.split(',')[0]}, f)
 
 if args.target:
     PROGRESS_FILE = get_progress_file(args.target)
