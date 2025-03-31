@@ -123,41 +123,43 @@ if args.resume:
     args.output = True
     if os.path.exists(PROGRESS_FILE):
         with open(PROGRESS_FILE, 'r') as f:
-            progress = json.load(f)
-            if not args.target:
-                args.target = list(progress.keys())[0]
-                if args.target:
-                    PROGRESS_FILE = get_progress_file(args.target)
-                    if args.debug:
-                        logging.debug(f"Using progress file: {PROGRESS_FILE}")
-                else:
-                    print("[!] Cannot determine target for progress file.")
-                    sys.exit(1)
-                completed_queries = list(progress.get(args.target, {}).values())
-            if 'sleep_time' in progress and not any(arg.startswith('--sleep') for arg in sys.argv):
-                args.sleep = progress['sleep_time']
-            if args.debug:
-                logging.debug(f"Resuming with saved sleep time: {args.sleep}")
-            if completed_queries and isinstance(completed_queries[0], dict):
-                if not any(arg.startswith('-e') or arg.startswith('--engine') for arg in sys.argv):
-                    args.engine = completed_queries[0].get("engine", args.engine)
-                    if args.debug:
-                        logging.debug(f"Resuming with saved engine: {args.engine}")
-            print(f"[INFO] Resuming previous target from progress: {args.target}")
-            if args.notor:
-                args.tor = False
-                log("[INFO] Skipping Tor for resume...", silent=args.silent)
+            try:
+                progress = json.load(f)
+            except json.JSONDecodeError:
+                print("[!] Progress file found but empty. Please provide a target with -t.")
+                sys.exit(1)
+
+        if not args.target:
+            args.target = list(progress.keys())[0]
+            if args.target:
+                PROGRESS_FILE = get_progress_file(args.target)
                 if args.debug:
-                    logging.debug(f"Skipping Tor for resume for target: {args.target}")
+                    logging.debug(f"Using progress file: {PROGRESS_FILE}")
             else:
-                if progress.get('use_tor') and not args.tor:
-                    log("[INFO] Previous session used Tor. Enabling Tor for resume...", silent=args.silent)
-                    args.tor = True
-                    if args.debug:
-                        logging.debug(f"Enabling Tor for resume for target: {args.target}")
+                print("[!] Cannot determine target for progress file.")
+                sys.exit(1)
+            completed_queries = list(progress.get(args.target, {}).values())
+        if 'sleep_time' in progress and not any(arg.startswith('--sleep') for arg in sys.argv):
+            args.sleep = progress['sleep_time']
+        if args.debug:
+            logging.debug(f"Resuming with saved sleep time: {args.sleep}")
+        if completed_queries and isinstance(completed_queries[0], dict):
+            if not any(arg.startswith('-e') or arg.startswith('--engine') for arg in sys.argv):
+                args.engine = completed_queries[0].get("engine", args.engine)
+                if args.debug:
+                    logging.debug(f"Resuming with saved engine: {args.engine}")
+        print(f"[INFO] Resuming previous target from progress: {args.target}")
+        if args.notor:
+            args.tor = False
+            log("[INFO] Skipping Tor for resume...", silent=args.silent)
+            if args.debug:
+                logging.debug(f"Skipping Tor for resume for target: {args.target}")
         else:
-            print("[!] Progress file found but empty. Please provide a target with -t.")
-            sys.exit(1)
+            if progress.get('use_tor') and not args.tor:
+                log("[INFO] Previous session used Tor. Enabling Tor for resume...", silent=args.silent)
+                args.tor = True
+                if args.debug:
+                    logging.debug(f"Enabling Tor for resume for target: {args.target}")
     else:
         print("[!] --resume flag used, but no progress file found.")
         print("[!] Either remove --resume or run with -t to start fresh.")
