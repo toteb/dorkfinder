@@ -475,12 +475,12 @@ except Exception as e:
             logging.debug(f"Exception occurred: {str(se)}")
     cleanup(browser=browser, output_file=output_file, args=args)
     if use_temp_profile:
-    try:
-        import shutil
-        if os.path.exists(profile):
-            shutil.rmtree(profile)
-            if args.debug:
-                logging.debug(f"Deleted temporary Chrome profile directory: {profile}")
+        try:
+            import shutil
+            if os.path.exists(profile):
+                shutil.rmtree(profile)
+                if args.debug:
+                    logging.debug(f"Deleted temporary Chrome profile directory: {profile}")
     except Exception as e:
         if args.debug:
             logging.debug(f"Failed to delete Chrome profile directory: {e}")
