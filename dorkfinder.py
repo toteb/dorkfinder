@@ -481,7 +481,7 @@ except Exception as e:
                 shutil.rmtree(profile)
                 if args.debug:
                     logging.debug(f"Deleted temporary Chrome profile directory: {profile}")
-    except Exception as e:
-        if args.debug:
-            logging.debug(f"Failed to delete Chrome profile directory: {e}")
+        except Exception as e:
+            if args.debug:
+                logging.debug(f"Failed to delete Chrome profile directory: {e}")
     os._exit(1)
