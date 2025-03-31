@@ -84,9 +84,15 @@ if args.resume and not args.target:
 else:
     # Save target to pointer file
     with open(LAST_TARGET_FILE, 'w') as f:
-        json.dump({"target": args.target.split(',')[0]}, f)
+    json.dump({"target": args.target.split(',')[0]}, f)
 
-PROGRESS_FILE = get_progress_file(args.target)
+if args.target:
+    PROGRESS_FILE = get_progress_file(args.target)
+    if args.debug:
+        logging.debug(f"Using progress file: {PROGRESS_FILE}")
+else:
+    print("[!] Cannot determine target for progress file.")
+    sys.exit(1)
 # === END RESUME STUFF ===
 
 if args.debug:
@@ -179,27 +185,19 @@ use_real_profile = args.engine == 'google'
 headless_mode = args.engine != 'google'
 
 if platform.system() == 'Darwin':
-    #profile = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default")
     options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 elif platform.system() == 'Linux':
-    #profile = os.path.expanduser("~/.config/google-chrome/Default")
     options.binary_location = "/usr/bin/google-chrome"
 else:
-    # temp_dir = tempfile.gettempdir()  # e.g., C:\Users\user\AppData\Local\Temp
-    # profile_temp_dir = os.path.join(temp_dir, "chrome-profile-dorkfinder")
-    # os.makedirs(profile_temp_dir, exist_ok=True)
-    # profile = profile_temp_dir
     options.binary_location = find_chrome_binary()
 
+# === USE real_profile with GOOGLE only ===
 use_temp_profile = args.engine == 'google'
 if use_temp_profile:
     temp_dir = tempfile.gettempdir()
     profile = os.path.join(temp_dir, "chrome-profile-dorkfinder")
     os.makedirs(profile, exist_ok=True)
     options.add_argument(f"--user-data-dir={profile}")
-
-# if use_real_profile:
-#    options.add_argument(f"--user-data-dir={profile}")
         
 if platform.system() == 'Windows':
     options.add_argument("--no-first-run")
