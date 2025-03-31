@@ -24,31 +24,6 @@ COMPLETED_SUCCESSFULLY = False
 ensure_sudo_alive()
 CAPTCHA_THRESHOLD = 5
 
-# === RESUME STUFF ===
-TEMP_DIR = tempfile.gettempdir()
-LAST_TARGET_FILE = os.path.join(TEMP_DIR, "dorkfinder_last_target.json")
-
-def get_progress_file(target=None):
-    safe_target = target.replace(' ', '_').replace('.', '_') if target else "default"
-    return os.path.join(TEMP_DIR, f"resume_{safe_target.lower()}.json")
-
-# Determine the target
-if args.resume and not args.target:
-    if os.path.exists(LAST_TARGET_FILE):
-        with open(LAST_TARGET_FILE, 'r') as f:
-            args.target = json.load(f).get("target")
-        if not args.target:
-            print("[!] Cannot resume: target unknown.")
-            sys.exit(1)
-else:
-    # Save target to pointer file
-    with open(LAST_TARGET_FILE, 'w') as f:
-        json.dump({"target": args.target.split(',')[0]}, f)
-
-PROGRESS_FILE = get_progress_file(args.target)
-# === END RESUME STUFF ===
-
-
 # === CLI ARGUMENTS ===
 class SilentArgumentParser(argparse.ArgumentParser):
     def print_banner(self):
@@ -89,6 +64,30 @@ parser.add_argument('--notor', action='store_true', help='Disables Tor routing f
 
 # === PARSING STUFF ===
 args = parser.parse_args()
+
+# === RESUME STUFF ===
+TEMP_DIR = tempfile.gettempdir()
+LAST_TARGET_FILE = os.path.join(TEMP_DIR, "dorkfinder_last_target.json")
+
+def get_progress_file(target=None):
+    safe_target = target.replace(' ', '_').replace('.', '_') if target else "default"
+    return os.path.join(TEMP_DIR, f"resume_{safe_target.lower()}.json")
+
+# Determine the target
+if args.resume and not args.target:
+    if os.path.exists(LAST_TARGET_FILE):
+        with open(LAST_TARGET_FILE, 'r') as f:
+            args.target = json.load(f).get("target")
+        if not args.target:
+            print("[!] Cannot resume: target unknown.")
+            sys.exit(1)
+else:
+    # Save target to pointer file
+    with open(LAST_TARGET_FILE, 'w') as f:
+        json.dump({"target": args.target.split(',')[0]}, f)
+
+PROGRESS_FILE = get_progress_file(args.target)
+# === END RESUME STUFF ===
 
 if args.debug:
     import json_log_formatter
