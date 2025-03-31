@@ -272,7 +272,7 @@ def minimize_chrome_window(timeout=10):
         return
 
     try:
-        print("[DEBUG] Waiting for Chrome window to appear...")
+        #print("[INFO] Waiting for Chrome window to appear...")
         from pywinauto import Desktop
         for _ in range(timeout * 2):
             try:
