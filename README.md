@@ -1,6 +1,6 @@
 # 🕵️‍♂️ DorkFinder — Simple Dorking Automation Tool
 
-**DorkFinder** is a cross-platform, headless-capable Python tool for automating Google dork-style searches across multiple engines. It's designed for red teamers, pentesters, and OSINT practitioners who need to search public files, assets, or misconfigured buckets quickly and quietly. Feel free to contibute by sending pull requests or issues.
+**DorkFinder** is a cross-platform, headless-capable* Python tool for automating Google dork-style searches across multiple engines. It's designed for red teamers, pentesters, and OSINT practitioners who need to search public files, assets, or misconfigured buckets quickly and quietly. Feel free to contibute by sending pull requests or issues.
 
 Built by @mcn1k
 
@@ -8,14 +8,14 @@ Built by @mcn1k
 
 ## ✨ Features
 
-- 🔍 Supports Google, DuckDuckGo, Bing, and Brave
+- 🔍 Supports Google, DuckDuckGo, Bing, and Brave and can be customized to support more.
 - ✅ Smart resume support (`--resume`) — continues where it left off
 - 🧠 Tracks query progress per target and engine
 - 🧼 Silent & debug modes for automation or analysis
 - 🔁 Supports Tor integration and IP rotation
 - 💾 Outputs findings per target to reusable flat files
 - 💡 Supports templated dorks with `{cli}` replacement
-- 🪄 Real Chrome profile usage for better detection evasion (Google only)
+- 🪄 Real Chrome profile usage for better detection evasion (Google only). *Currently Chrome does not support headless.
 
 ---
 
