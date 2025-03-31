@@ -139,6 +139,7 @@ if args.resume:
                 print("[!] Cannot determine target for progress file.")
                 sys.exit(1)
             completed_queries = list(progress.get(args.target, {}).values())
+        completed_queries = list(progress.get(args.target, {}).values())
         if 'sleep_time' in progress and not any(arg.startswith('--sleep') for arg in sys.argv):
             args.sleep = progress['sleep_time']
         if args.debug:
