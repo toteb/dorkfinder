@@ -15,7 +15,8 @@ Built by @mcn1k
 - 🔁 Supports Tor integration and IP rotation
 - 💾 Outputs findings per target to reusable flat files
 - 💡 Supports templated dorks with `{cli}` replacement
-- 🪄 Real Chrome profile usage for better detection evasion (Google only). *Currently Chrome does not support headless.
+- 🪄 Real Chrome profile usage for better detection evasion (Google only). 
+	*Currently Chrome does not support headless.
 
 ---
 
