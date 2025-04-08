@@ -21,7 +21,6 @@ from utils import (
 )
 
 COMPLETED_SUCCESSFULLY = False
-ensure_sudo_alive()
 CAPTCHA_THRESHOLD = 5
 
 # === CLI ARGUMENTS ===
