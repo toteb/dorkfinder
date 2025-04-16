@@ -355,7 +355,20 @@ def modify_queries_for_exclusions(queries, excluded_extensions):
             else:
                 modified_queries.append(query)
         else:
-            modified_queries.append(query)
+            # For queries without extensions, add exclusion
+            if 'site:' in query:
+                # Split at site: to preserve the site part
+                site_parts = query.split('site:')
+                if len(site_parts) > 1:
+                    # Add exclusions after the site part
+                    new_query = f"{site_parts[0]}site:{site_parts[1]} -ext:{' -ext:'.join(excluded_extensions)}"
+                    modified_queries.append(new_query)
+                else:
+                    modified_queries.append(query)
+            else:
+                # For queries without site:, add exclusions at the end
+                new_query = f"{query} -ext:{' -ext:'.join(excluded_extensions)}"
+                modified_queries.append(new_query)
     
     return modified_queries
 
