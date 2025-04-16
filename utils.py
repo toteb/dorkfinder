@@ -18,10 +18,9 @@ RESET = '\033[0m'
 
 shutdown_flag = False
 
-def get_output_streams():
+def get_output_streams(args=None):
     """Get appropriate output streams based on debug mode"""
-    from dorkfinder import args
-    if getattr(args, 'debug', False):
+    if args and getattr(args, 'debug', False):
         return sys.stdout, sys.stderr
     return subprocess.DEVNULL, subprocess.DEVNULL
 
@@ -59,18 +58,18 @@ def ensure_sudo_alive(args):
         sys.exit(1)
 
     # Start background thread to keep sudo alive
-    keep_sudo_alive_interval(15)
+    keep_sudo_alive_interval(15, args)
 
-def keep_sudo_alive_interval(interval_minutes=15):
+def keep_sudo_alive_interval(interval_minutes=15, args=None):
     """
     Starts a background thread that refreshes sudo timestamp every `interval_minutes`.
     """
-    def refresh_sudo():
+    def refresh_sudo(args):
         while not shutdown_flag:
             try:
-                stdout, stderr = get_output_streams()
+                stdout, stderr = get_output_streams(args)
                 subprocess.run(["sudo", "-n", "true"], stdout=stdout, stderr=stdout)
-                if getattr(args, 'debug', False):
+                if args and getattr(args, 'debug', False):
                     log(f"Refreshed sudo timestamp at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", level="debug")
             except subprocess.CalledProcessError:
                 print()
@@ -78,7 +77,7 @@ def keep_sudo_alive_interval(interval_minutes=15):
             time.sleep(interval_minutes * 60)
 
     if platform.system() in ["Linux", "Darwin"]:
-        threading.Thread(target=refresh_sudo, daemon=True).start()
+        threading.Thread(target=refresh_sudo, args=(args,), daemon=True).start()
 
 def log(msg, level="info", silent=False, **kwargs):
     """Enhanced logging function with levels and colors"""
@@ -439,7 +438,7 @@ def find_chrome_binary():
 # Cleanup 
 def cleanup(browser=None, output_file=None, args=None):
     try:
-        ensure_sudo_alive()
+        ensure_sudo_alive(args)
         if browser:
             try:
                 browser.quit()
