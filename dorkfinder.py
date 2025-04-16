@@ -17,7 +17,7 @@ import json
 from utils import (
     minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines,
     find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip,
-    cleanup, kill_existing_uc_chrome, ensure_sudo_alive
+    cleanup, kill_existing_uc_chrome, ensure_sudo_alive, modify_queries_for_exclusions
 )
 
 COMPLETED_SUCCESSFULLY = False
