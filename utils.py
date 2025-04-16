@@ -8,38 +8,91 @@ import requests
 import threading
 import psutil
 import urllib.request
+import getpass
+from datetime import datetime
+
+# ANSI color codes
+BLUE = '\033[94m'
+YELLOW = '\033[93m'
+RESET = '\033[0m'
 
 shutdown_flag = False
 
-# Ensure sudo for darwin/linux
-def ensure_sudo_alive():
+def get_output_streams():
+    """Get appropriate output streams based on debug mode"""
+    from dorkfinder import args
+    if getattr(args, 'debug', False):
+        return sys.stdout, sys.stderr
+    return subprocess.DEVNULL, subprocess.DEVNULL
+
+def ensure_sudo_alive(args):
     """
     On Linux/macOS, request sudo access once and keep it alive.
     On Windows, this function does nothing.
     """
-
     if platform.system() not in ['Linux', 'Darwin']:
         return  # No sudo needed on Windows
 
-    result = subprocess.run("sudo -n true", shell=True)
-    if result.returncode != 0:
-        # We don’t have sudo; ask for it interactively
-        try:
-            subprocess.run("sudo -v", shell=True, check=True)
-        except subprocess.CalledProcessError:
-            print("[!] Sudo privileges are required but could not be obtained.")
-            sys.exit(1)
+    try:
+        # Attempt non-interactive sudo check
+        result = subprocess.run(["sudo", "-n", "true"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if result.returncode != 0:
+            # Prompt user for password with clearer message
+            try:
+                if getattr(args, 'debug', False):
+                    color = YELLOW
+                    info = "DEBUG"
+                else:
+                    color = BLUE
+                    info = "INFO"
+                password = getpass.getpass(f"{color}[{info}] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{RESET} Sudo access is required. Enter password: ")
+                result = subprocess.run(["sudo", "-S", "-v"], input=password + "\n", text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                if result.returncode != 0:
+                    log("Invalid sudo password. Exiting.", level="error")
+                    sys.exit(1)
+            except KeyboardInterrupt:
+                print()
+                log("Sudo password prompt cancelled by user.", level="error")
+                sys.exit(1)
+    except subprocess.CalledProcessError:
+        log("Sudo privileges could not be obtained. Exiting.", level="error")
+        sys.exit(1)
 
-    def keep_sudo_alive():
-        global shutdown_flag
+    # Start background thread to keep sudo alive
+    keep_sudo_alive_interval(15)
+
+def keep_sudo_alive_interval(interval_minutes=15):
+    """
+    Starts a background thread that refreshes sudo timestamp every `interval_minutes`.
+    """
+    def refresh_sudo():
         while not shutdown_flag:
             try:
-                subprocess.run("sudo -v", shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
-                time.sleep(60)
-            except Exception:
-                break
+                stdout, stderr = get_output_streams()
+                subprocess.run(["sudo", "-n", "true"], stdout=stdout, stderr=stdout)
+                if getattr(args, 'debug', False):
+                    log(f"Refreshed sudo timestamp at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", level="debug")
+            except subprocess.CalledProcessError:
+                print()
+                log("Failed to refresh sudo timestamp.", level="error")
+            time.sleep(interval_minutes * 60)
 
-    threading.Thread(target=keep_sudo_alive, daemon=True).start()
+    if platform.system() in ["Linux", "Darwin"]:
+        threading.Thread(target=refresh_sudo, daemon=True).start()
+
+def log(msg, level="info", silent=False, **kwargs):
+    """Enhanced logging function with levels and colors"""
+    if silent:
+        return
+        
+    color = {
+        "info": BLUE,
+        "debug": YELLOW,
+        "error": '\033[91m'  # Red
+    }.get(level, BLUE)
+    
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"{color}[{level.upper()}] {timestamp}{RESET} {msg}", **kwargs)
 
 # Track Tor process if needed (Windows/manual)
 tor_process = None
@@ -253,11 +306,6 @@ def get_current_tor_ip(retries=5, delay=2):
             time.sleep(delay)
     return "Tor not ready (connection refused)"
 
-# Silent
-def log(msg, silent=False, **kwargs):
-    if not silent:
-        print(msg, **kwargs)
-
 def get_search_engines():
     return {
         'brave': "https://search.brave.com/search?q=",
@@ -265,6 +313,52 @@ def get_search_engines():
         'ddg': "https://duckduckgo.com/?q=",
         'google': "https://www.google.com/search?q=",
     }
+
+def modify_queries_for_exclusions(queries, excluded_extensions):
+    """
+    Modify queries to exclude specified extensions.
+    
+    Args:
+        queries (list): List of dork queries
+        excluded_extensions (list): List of extensions to exclude
+        
+    Returns:
+        list: Modified queries with excluded extensions
+    """
+    if not excluded_extensions:
+        return queries
+    
+    modified_queries = []
+    for query in queries:
+        # Skip if it's a comment
+        if query.startswith('#'):
+            modified_queries.append(query)
+            continue
+            
+        # Check if query contains ext: or extension:
+        if 'ext:' in query or 'extension:' in query:
+            # Split the query into parts
+            parts = query.split('ext:')
+            if len(parts) > 1:
+                # Get the extensions part
+                extensions_part = parts[1].split()[0]
+                # Split extensions by | and remove excluded ones
+                extensions = [ext.strip() for ext in extensions_part.split('|')]
+                filtered_extensions = [ext for ext in extensions if ext not in excluded_extensions]
+                
+                if filtered_extensions:
+                    # Reconstruct the query with filtered extensions
+                    new_query = parts[0] + 'ext:' + '|'.join(filtered_extensions) + ' ' + ' '.join(parts[1].split()[1:])
+                    modified_queries.append(new_query)
+                else:
+                    # Skip the query if all extensions were excluded
+                    continue
+            else:
+                modified_queries.append(query)
+        else:
+            modified_queries.append(query)
+    
+    return modified_queries
 
 # Minimize on windows
 def minimize_chrome_window(timeout=10):
