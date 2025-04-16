@@ -17,7 +17,7 @@ import json
 from utils import (
     minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines,
     find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip,
-    cleanup, kill_existing_uc_chrome
+    cleanup, kill_existing_uc_chrome, ensure_sudo_alive
 )
 
 COMPLETED_SUCCESSFULLY = False
@@ -65,6 +65,10 @@ parser.add_argument('--exclude', type=str, help='Comma-separated list of extensi
 
 # === PARSING STUFF ===
 args = parser.parse_args()
+
+# Ensure sudo is available if needed
+if platform.system() in ['Linux', 'Darwin']:
+    ensure_sudo_alive(args)
 
 # === RESUME STUFF ===
 TEMP_DIR = tempfile.gettempdir()
