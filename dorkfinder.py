@@ -16,7 +16,7 @@ uc.Chrome.__del__ = lambda self: None
 import json
 from utils import (
     minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines,
-    find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip, ensure_sudo_alive,
+    find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip,
     cleanup, kill_existing_uc_chrome
 )
 
@@ -53,6 +53,7 @@ parser = SilentArgumentParser(
 )
 parser.add_argument('-t', metavar='example.com', help='Target domain (or comma-separated list)', dest='target', type=str)
 parser.add_argument('-o', action='store_true', help='Write output to a timestamped file', dest='output')
+parser.add_argument('--output-dir', type=str, help='Directory to save output files')
 parser.add_argument('-e', choices=['brave', 'bing', 'ddg', 'google'], default='google', help='Search engine to use. Default: Google Chrome', dest='engine')
 parser.add_argument('-d', action='store_true', help='Enable debug output (page source snippet)', dest='debug')
 parser.add_argument('-r', action='store_true', help='Resume from last progress', dest='resume')
@@ -60,6 +61,7 @@ parser.add_argument('-s', action='store_true', default=False, help='Keeps everyt
 parser.add_argument('--sleep', type=int, default=60, help='Sleep time between requests (in seconds)', dest='sleep')
 parser.add_argument('--tor', action='store_true', help='Enable Tor routing')
 parser.add_argument('--notor', action='store_true', help='Disables Tor routing for --resume')
+parser.add_argument('--exclude', type=str, help='Comma-separated list of extensions to exclude (e.g., "pdf,doc")', dest='exclude')
 
 # === PARSING STUFF ===
 args = parser.parse_args()
@@ -82,8 +84,11 @@ if args.resume and not args.target:
             sys.exit(1)
 else:
     # Save target to pointer file
-    with open(LAST_TARGET_FILE, 'w') as f:
-        json.dump({"target": args.target.split(',')[0]}, f)
+    if args.target:
+        with open(LAST_TARGET_FILE, 'w') as f:
+            json.dump({"target": args.target.split(',')[0]}, f)
+    else:
+        parser.error("Missing required argument: -t (unless using --resume)")
 
 if args.target:
     PROGRESS_FILE = get_progress_file(args.target)
@@ -185,6 +190,14 @@ queries_path = os.path.join(SCRIPT_DIR, 'queries.txt')
 with open(queries_path, 'r', encoding='utf-8') as f:
     RAW_QUERIES = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
+# Process excluded extensions if specified
+if args.exclude:
+    excluded_extensions = [ext.strip() for ext in args.exclude.split(',')]
+    RAW_QUERIES = modify_queries_for_exclusions(RAW_QUERIES, excluded_extensions)
+    if args.debug:
+        logging.debug(f"Excluded extensions: {excluded_extensions}")
+        logging.debug(f"Modified queries count: {len(RAW_QUERIES)}")
+
 kill_existing_uc_chrome()
 
 # === Browser Setup ===
@@ -276,11 +289,16 @@ if not headless_mode:
 output_file = None
 if args.output or args.silent:
     safe = '_'.join(t.replace('.', '_') for t in targets)
+    output_dir = args.output_dir if args.output_dir else os.getcwd()
+    os.makedirs(output_dir, exist_ok=True)
     output_filename = f'dorkfinder_results_{safe}.txt'
-    output_file = open(output_filename, 'a', encoding='utf-8')
+    output_path = os.path.join(output_dir, output_filename)
+    output_file = open(output_path, 'a', encoding='utf-8')
+    if args.debug:
+        logging.debug(f"Writing results to: {output_path}")
     last_logged_engine = None
-    if os.path.exists(output_filename):
-        with open(output_filename, 'r', encoding='utf-8') as f:
+    if os.path.exists(output_path):
+        with open(output_path, 'r', encoding='utf-8') as f:
             for line in f:
                 if line.startswith("### ENGINE :"):
                     last_logged_engine = line.strip().split(":")[1].strip()
@@ -410,8 +428,6 @@ try:
                     sys.stdout.flush()
                     time.sleep(1)
                 log('-> Back to work.', silent=args.silent)
-
-    ensure_sudo_alive()
 
     cleanup() 
     
