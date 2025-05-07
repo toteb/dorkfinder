@@ -5,6 +5,7 @@ import time
 import subprocess
 import shutil
 import requests
+import re
 import threading
 import psutil
 import urllib.request
@@ -304,6 +305,26 @@ def get_current_tor_ip(retries=5, delay=2):
         except requests.RequestException:
             time.sleep(delay)
     return "Tor not ready (connection refused)"
+
+# get current chrome version
+def get_chrome_major_version():
+    try:
+        if platform.system() == "Windows":
+            command = r'reg query "HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon" /v version'
+            output = subprocess.check_output(command, shell=True).decode()
+            version = re.search(r"(\d+)\.(\d+)\.(\d+)\.(\d+)", output).group(1)
+        elif platform.system() == "Darwin":
+            output = subprocess.check_output(
+                ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"]
+            ).decode()
+            version = re.search(r"Google Chrome (\d+)", output).group(1)
+        else:  # Assume Linux
+            output = subprocess.check_output(["google-chrome", "--version"]).decode()
+            version = re.search(r"Google Chrome (\d+)", output).group(1)
+        return int(version)
+    except Exception as e:
+        print(f"Could not detect Chrome version: {e}")
+        return None
 
 def get_search_engines():
     return {
