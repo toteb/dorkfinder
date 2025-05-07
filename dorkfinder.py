@@ -17,7 +17,7 @@ import json
 from utils import (
     minimize_chrome_window, minimize_chrome_macos, minimize_chrome_linux, get_search_engines,
     find_chrome_binary, is_tor_installed, log, start_tor, stop_tor, rotate_tor_ip, get_current_tor_ip,
-    cleanup, kill_existing_uc_chrome, ensure_sudo_alive, modify_queries_for_exclusions
+    cleanup, kill_existing_uc_chrome, ensure_sudo_alive, modify_queries_for_exclusions, get_chrome_major_version
 )
 
 COMPLETED_SUCCESSFULLY = False
@@ -265,7 +265,9 @@ retry_tracker = {}
 try:
     import atexit
     atexit.register(cleanup)
-    browser = uc.Chrome(options=options, version_main=134, headless=headless_mode)
+    chrome_version = get_chrome_major_version()
+    #print(chrome_version) # debug
+    browser = uc.Chrome(options=options, version_main=chrome_version, headless=headless_mode)
     if args.debug:
         logging.debug(f"Browser started with headless={headless_mode}, profile={use_real_profile}")
     time.sleep(1)
