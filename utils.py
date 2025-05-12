@@ -10,12 +10,70 @@ import threading
 import psutil
 import urllib.request
 import getpass
+import logging
 from datetime import datetime
 
-# ANSI color codes
-BLUE = '\033[94m'
-YELLOW = '\033[93m'
-RESET = '\033[0m'
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+# Color constants
+def init_colors():
+    if platform.system().lower() == "windows":
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+            return {
+                "RESET": "\033[0m",
+                "GREEN": "\033[92m",
+                "RED": "\033[91m",
+                "YELLOW": "\033[93m",
+                "BLUE": "\033[94m",
+                "MAGENTA": "\033[95m",
+                "CYAN": "\033[96m",
+                "WHITE": "\033[97m",
+                "BOLD": "\033[1m"
+            }
+        except Exception:
+            return {
+                "RESET": "",
+                "GREEN": "",
+                "RED": "",
+                "YELLOW": "",
+                "BLUE": "",
+                "MAGENTA": "",
+                "CYAN": "",
+                "WHITE": "",
+                "BOLD": ""
+            }
+    else:
+        return {
+            "RESET": "\033[0m",
+            "GREEN": "\033[92m",
+            "RED": "\033[91m",
+            "YELLOW": "\033[93m",
+            "BLUE": "\033[94m",
+            "MAGENTA": "\033[95m",
+            "CYAN": "\033[96m",
+            "WHITE": "\033[97m",
+            "BOLD": "\033[1m"
+        }
+
+# Initialize colors
+colors = init_colors()
+RESET = colors["RESET"]
+GREEN = colors["GREEN"]
+RED = colors["RED"]
+YELLOW = colors["YELLOW"]
+BLUE = colors["BLUE"]
+MAGENTA = colors["MAGENTA"]
+CYAN = colors["CYAN"]
+WHITE = colors["WHITE"]
+BOLD = colors["BOLD"]
 
 shutdown_flag = False
 
@@ -30,55 +88,84 @@ def ensure_sudo_alive(args):
     On Linux/macOS, request sudo access once and keep it alive.
     On Windows, this function does nothing.
     """
-    if platform.system() not in ['Linux', 'Darwin']:
+    pid = os.getpid()
+    plat = platform.system()
+    sudo_check_required = plat in ['Linux', 'Darwin']
+    
+    if args and getattr(args, 'debug', False):
+        logging.debug(f"Platform is {plat}. Sudo check required: {sudo_check_required}")
+
+    if not sudo_check_required:
         return  # No sudo needed on Windows
 
     try:
         # Attempt non-interactive sudo check
+        if args and getattr(args, 'debug', False):
+            logging.debug("Attempting non-interactive sudo check with 'sudo -n true'")
         result = subprocess.run(["sudo", "-n", "true"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if result.returncode != 0:
             # Prompt user for password with clearer message
+            if args and getattr(args, 'debug', False):
+                logging.debug("Non-interactive sudo check failed, prompting for password...")
             try:
-                if getattr(args, 'debug', False):
-                    color = YELLOW
-                    info = "DEBUG"
-                else:
-                    color = BLUE
-                    info = "INFO"
-                password = getpass.getpass(f"{color}[{info}] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{RESET} Sudo access is required. Enter password: ")
+                mode = "INFO"
+                password = getpass.getpass(f"[{mode}] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Sudo access is required. Enter password: ")
                 result = subprocess.run(["sudo", "-S", "-v"], input=password + "\n", text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                if args and getattr(args, 'debug', False):
+                    logging.debug(f"Sudo password accepted: {result.returncode == 0}")
                 if result.returncode != 0:
-                    log("Invalid sudo password. Exiting.", level="error")
+                    if args and getattr(args, 'debug', False):
+                        logging.debug("Invalid sudo password. Exiting.")
                     sys.exit(1)
             except KeyboardInterrupt:
                 print()
-                log("Sudo password prompt cancelled by user.", level="error")
+                if args and getattr(args, 'debug', False):
+                    logging.debug("Sudo password prompt cancelled by user.")
                 sys.exit(1)
     except subprocess.CalledProcessError:
-        log("Sudo privileges could not be obtained. Exiting.", level="error")
+        if args and getattr(args, 'debug', False):
+            logging.debug("Sudo privileges could not be obtained. Exiting.")
         sys.exit(1)
 
-    # Start background thread to keep sudo alive
-    keep_sudo_alive_interval(15, args)
-
-def keep_sudo_alive_interval(interval_minutes=15, args=None):
-    """
-    Starts a background thread that refreshes sudo timestamp every `interval_minutes`.
-    """
-    def refresh_sudo(args):
+    def keep_sudo_alive():
+        global shutdown_flag
         while not shutdown_flag:
             try:
                 stdout, stderr = get_output_streams(args)
-                subprocess.run(["sudo", "-n", "true"], stdout=stdout, stderr=stdout)
+                subprocess.run(["sudo", "-n", "true"], stdout=stdout, stderr=stderr)
+                time.sleep(60)
+            except Exception as e:
                 if args and getattr(args, 'debug', False):
-                    log(f"Refreshed sudo timestamp at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", level="debug")
-            except subprocess.CalledProcessError:
+                    logging.debug(f"Exception in keep_sudo_alive thread: {e}")
+                break
+
+    threading.Thread(target=keep_sudo_alive, daemon=True).start()
+
+# refresh sudo
+def keep_sudo_alive_interval(interval_minutes=15):
+    """
+    Starts a background thread that refreshes sudo timestamp every `interval_minutes`.
+    """
+    #logging.debug("keep_sudo_alive_interval() called")
+    def refresh_sudo():
+        #logging.debug("refresh_sudo() called")
+        while not shutdown_flag:
+            try:
+                stdout, stderr = get_output_streams()
+                #logging.debug("Attempting to refresh sudo timestamp")
+                res = subprocess.run(["sudo", "-n", "true"], stdout=stdout, stderr=stdout)
+                #logging.debug(f"Refreshed sudo timestamp at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} (return code: {res.returncode})")
+            except subprocess.CalledProcessError as e:
                 print()
-                log("Failed to refresh sudo timestamp.", level="error")
+                logging.debug(f"Failed to refresh sudo timestamp. Return code: {e.returncode}", level="error")
+            except Exception as e:
+                print()
+                logging.debug(f"Exception while refreshing sudo timestamp: {e}", level="error")
             time.sleep(interval_minutes * 60)
 
     if platform.system() in ["Linux", "Darwin"]:
-        threading.Thread(target=refresh_sudo, args=(args,), daemon=True).start()
+        threading.Thread(target=refresh_sudo, daemon=True).start()
+
 
 def log(msg, level="info", silent=False, **kwargs):
     """Enhanced logging function with levels and colors"""
@@ -88,7 +175,7 @@ def log(msg, level="info", silent=False, **kwargs):
     color = {
         "info": BLUE,
         "debug": YELLOW,
-        "error": '\033[91m'  # Red
+        "error": RED
     }.get(level, BLUE)
     
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -471,8 +558,11 @@ def find_chrome_binary():
 
 # Cleanup 
 def cleanup(browser=None, output_file=None, args=None):
+    """Cleanup function to properly handle resource cleanup"""
+    global shutdown_flag
+    shutdown_flag = True  # Signal all threads to stop
+    
     try:
-        ensure_sudo_alive(args)
         if browser:
             try:
                 browser.quit()
@@ -494,10 +584,52 @@ def cleanup(browser=None, output_file=None, args=None):
             stop_tor()
 
         if output_file:
-            output_file.close()
+            try:
+                output_file.flush()
+                output_file.close()
+            except Exception as e:
+                if args and getattr(args, "debug", False):
+                    logging.debug(f"Failed to close output file: {e}")
+
+        # Clean up multiprocessing resources
+        import multiprocessing
+        import atexit
+        import signal
+        
+        # Clean up active children
+        for p in multiprocessing.active_children():
+            try:
+                p.terminate()
+                p.join(timeout=1)
+            except Exception:
+                pass
+
+        # Reset multiprocessing
+        if hasattr(multiprocessing, 'resource_tracker'):
+            try:
+                # Get the current process
+                current = multiprocessing.current_process()
+                if current.name == 'MainProcess':
+                    # Clear the resource tracker
+                    multiprocessing.resource_tracker._resource_tracker.clear()
+                    # Reset the resource tracker
+                    multiprocessing.resource_tracker._resource_tracker = multiprocessing.resource_tracker.ResourceTracker()
+            except Exception as e:
+                if args and getattr(args, "debug", False):
+                    logging.debug(f"Failed to reset resource tracker: {e}")
+
     except Exception as e:
         if args and getattr(args, "debug", False):
             logging.debug(f"Cleanup exception: {e}")
+    finally:
+        # Force cleanup of any remaining resources
+        if platform.system() in ['Linux', 'Darwin']:
+            try:
+                subprocess.run(['pkill', '-f', 'undetected-chromedriver'], 
+                             stdout=subprocess.DEVNULL, 
+                             stderr=subprocess.DEVNULL)
+            except Exception:
+                pass
 
 def kill_existing_uc_chrome():
     for proc in psutil.process_iter(['pid', 'name', 'cmdline']):

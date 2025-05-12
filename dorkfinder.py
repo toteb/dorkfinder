@@ -53,11 +53,12 @@ parser = SilentArgumentParser(
 )
 parser.add_argument('-t', metavar='example.com', help='Target domain (or comma-separated list)', dest='target', type=str)
 parser.add_argument('-o', action='store_true', help='Write output to a timestamped file', dest='output')
-parser.add_argument('--output-dir', type=str, help='Directory to save output files')
-parser.add_argument('-e', choices=['brave', 'bing', 'ddg', 'google'], default='google', help='Search engine to use. Default: Google Chrome', dest='engine')
-parser.add_argument('-d', action='store_true', help='Enable debug output (page source snippet)', dest='debug')
-parser.add_argument('-r', action='store_true', help='Resume from last progress', dest='resume')
-parser.add_argument('-s', action='store_true', default=False, help='Keeps everything nice and quiet', dest='silent')
+parser.add_argument('-od', '--output-dir', type=str, help='Directory to save output files')
+parser.add_argument('-j', '--jsonl', action='store_true', help='Save output in JSONL format', dest='jsonl')
+parser.add_argument('-e', '--engine', choices=['brave', 'bing', 'ddg', 'google'], default='google', help='Search engine to use. Default: Google Chrome', dest='engine')
+parser.add_argument('-d', '--debug', action='store_true', help='Enable debug output (page source snippet)', dest='debug')
+parser.add_argument('-r', '--resume', action='store_true', help='Resume from last progress', dest='resume')
+parser.add_argument('-s', '--silent', action='store_true', default=False, help='Keeps everything nice and quiet', dest='silent')
 parser.add_argument('--sleep', type=int, default=60, help='Sleep time between requests (in seconds)', dest='sleep')
 parser.add_argument('--tor', action='store_true', help='Enable Tor routing')
 parser.add_argument('--notor', action='store_true', help='Disables Tor routing for --resume')
@@ -297,7 +298,9 @@ if args.output or args.silent:
     safe = '_'.join(t.replace('.', '_') for t in targets)
     output_dir = args.output_dir if args.output_dir else os.getcwd()
     os.makedirs(output_dir, exist_ok=True)
-    output_filename = f'dorkfinder_results_{safe}.txt'
+    
+    # Determine output format based on -j/--jsonl flag
+    output_filename = f'dorkfinder_results_{safe}.jsonl' if args.jsonl else f'dorkfinder_results_{safe}.txt'
     output_path = os.path.join(output_dir, output_filename)
     output_file = open(output_path, 'a', encoding='utf-8')
     if args.debug:
@@ -306,8 +309,21 @@ if args.output or args.silent:
     if os.path.exists(output_path):
         with open(output_path, 'r', encoding='utf-8') as f:
             for line in f:
-                if line.startswith("### ENGINE :"):
-                    last_logged_engine = line.strip().split(":")[1].strip()
+                if args.jsonl:
+                    try:
+                        record = json.loads(line.strip())
+                        if 'engine' in record:
+                            last_logged_engine = record.get('engine')
+                    except json.JSONDecodeError:
+                        continue
+                else:
+                    if line.startswith("### ENGINE :"):
+                        last_logged_engine = line.strip().split(":")[1].strip()
+
+    if output_file and args.engine != last_logged_engine:
+        if not args.jsonl:
+            output_file.write(f"\n### ENGINE : {args.engine.upper()}\n")
+            output_file.flush()
 
 try:
     if not args.resume:
@@ -318,10 +334,6 @@ try:
         logging.debug(f"Engine: {', '.join(ENABLED_ENGINES)}")
     CAPTCHA_COUNT = 0
     SKIP = [".google.", "bing.com", "mozilla.org", "microsoft.com", "duckduckgo.com", "duck.ai", "apple.com", "google.", "windows.net", "live.com", "wikipedia.org", "youtube.com"]
-
-    if output_file and args.engine != last_logged_engine:
-        output_file.write(f"\n### ENGINE : {args.engine.upper()}\n")
-        output_file.flush()
 
     for cli in targets:
         log(f"[+] Target: {cli}", silent=args.silent)
@@ -407,7 +419,18 @@ try:
                     for href in sorted(found_links):
                         log(f"   -> {href}", silent=args.silent)
                         if output_file:
-                            output_file.write(f"{href}\n")
+                            if args.jsonl:
+                                finding_record = {
+                                    'type': 'finding',
+                                    'timestamp': datetime.now().isoformat(),
+                                    'finding': href,
+                                    'engine': engine_key,
+                                    'query': normalized_query,
+                                    'target': cli
+                                }
+                                output_file.write(json.dumps(finding_record) + '\n')
+                            else:
+                                output_file.write(f"{href}\n")
                             output_file.flush()
                         if args.debug:
                             logging.debug(f"Found link: {href}")
@@ -416,7 +439,7 @@ try:
                     found = False
 
                 if not found:
-                    log("   -> No relevant links found.", silent=args.silent)
+                    log("-> No relevant links found.", silent=args.silent)
                     if args.debug:
                         logging.debug("No relevant links found.")
 
@@ -430,9 +453,14 @@ try:
                 save_progress()
                 
                 for remaining in range(args.sleep, 0, -1):
-                    sys.stdout.write(f'\r   -> Sleeping {remaining}s ')
+                    # Clear the current line and write the sleep counter
+                    sys.stdout.write('\r' + ' ' * 50)  # Clear the line with spaces
+                    sys.stdout.write(f'\r   -> Sleeping {remaining}s')
                     sys.stdout.flush()
                     time.sleep(1)
+                # Clear the sleep counter line before writing "Back to work"
+                sys.stdout.write('\r' + ' ' * 50 + '\r')
+                sys.stdout.flush()
                 log('-> Back to work.', silent=args.silent)
 
     cleanup() 
@@ -466,16 +494,21 @@ try:
     sys.exit(0)
 
 except KeyboardInterrupt:
-    log("\n[!] Interrupted by user. Saving progress and exiting...", silent=args.silent)
+    print()
+    log("[!] Interrupted by user. Saving progress and exiting...", silent=args.silent)
     if args.debug:
         logging.debug("Interrupted by user.")
     try:
         save_progress()
     except Exception as e:
+        print()
         log(f"[!] Failed to save progress: {e}", silent=args.silent)
         if args.debug:
             logging.debug(f"Exception occurred: {str(e)}")
+    
+    # Ensure proper cleanup
     cleanup(browser=browser, output_file=output_file, args=args)
+    
     if use_temp_profile:
         try:
             import shutil
@@ -486,7 +519,9 @@ except KeyboardInterrupt:
         except Exception as e:
             if args.debug:
                 logging.debug(f"Failed to delete Chrome profile directory: {e}")
-    os._exit(2)
+    
+    # Exit cleanly
+    sys.exit(0)
 
 except Exception as e:
     if COMPLETED_SUCCESSFULLY:
