@@ -22,9 +22,7 @@ site:zoom.us inurl:"{cli}"
 site:jfrog.io "{cli}" 
 site:firebaseio.com "{cli}" 
 inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer site:"{cli}" 
-intext:"error" | intext:"exception" | intext:"not found" | intext:"failed" site:"{cli}" 
-site:"{cli}" inurl:login | inurl:logon | inurl:sign-in | inurl:signin | inurl:portal 
-site:"{cli}" "choose file" 
+site:"{cli}" inurl:login | inurl:logon | inurl:sign-in | inurl:signin | inurl:portal
 
 #Code Leaks and Development Files
 inurl:gitlab "{cli}" 
